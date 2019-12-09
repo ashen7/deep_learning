@@ -32,7 +32,12 @@ import numpy as np
 # 激活函数
 def sigmoid(x):
     # exp返回e的x次方  e=2.7
-    return 1.0 / (1 + np.exp(-x))
+    # return 1.0 / (1 + np.exp(-x))
+    # 优化一下 避免出现极大的数据溢出
+    if x >= 0:
+        return 1.0 / (1 + np.exp(-x))
+    else:
+        return np.exp(x) / (1 + np.exp(x))
 
 # 节点类 负责记录和维护节点自身信息以及与这个节点相关的上下游连接 实现输出值和误差项的计算
 class Node(object):
