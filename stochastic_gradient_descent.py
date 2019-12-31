@@ -32,8 +32,8 @@ def train_linear_unit():
     return linear_unit
 
 def plot(linear_unit):
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+    #fig = plt.figure()
+    #ax = fig.add_subplot(1, 1, 1)
     # ax.scatter(map(lambda x:x[0], input_vector), labels)
 
     # 权重 偏置
@@ -42,7 +42,7 @@ def plot(linear_unit):
     # x是工作年份 y是训练得到的最优权重*x 加最优偏置
     x = range(0, 12, 1)
     y = list(map(lambda x: weights[0] * x + bias, x))
-    ax.plot(x, y)
+    plt.plot(x, y)
     plt.show()
 
 if __name__ == '__main__':
