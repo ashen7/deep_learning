@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     FLAGS_stderrthreshold = 0;
     FLAGS_colorlogtostderr = true;
 
-    //TestFCNN();
+    TestFCNN();
     
 
     google::ShutdownGoogleLogging();
