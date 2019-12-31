@@ -55,7 +55,8 @@ public:
                     SigmoidActivatorCallback forward_callback=nullptr, 
                     SigmoidActivatorCallback backward_callback=nullptr);
     int Forward(const std::vector<std::vector<float>>& input_array);
-    int Backward(std::vector<std::vector<float>>& delta_array);
+    int Backward(const std::vector<std::vector<float>>& output_array, 
+                 std::vector<std::vector<float>>& delta_array);
 
 private:
     size_t input_node_size_;     //输入节点
@@ -122,11 +123,11 @@ int FullConnectedLayer::Forward(const std::vector<std::vector<float>>& input_arr
 //反向计算 
 int FullConnectedLayer::Backward(const std::vector<std::vector<float>>& output_array,  
                                  std::vector<std::vector<float>>& delta_array) {
-    if (backward_activator_callback_) {
-        backward_activator_callback_()
-    } else {
+    //if (backward_activator_callback_) {
+    //    backward_activator_callback_()
+    //} else {
 
-    }
+    //}
 
 }
 
