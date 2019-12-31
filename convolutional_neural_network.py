@@ -45,7 +45,7 @@ stride步长2   得到feature_map为2*2
 
 cnn的训练 反向传播算法： 利用链式求导计算损失函数对每个权重的偏导(梯度) 根据梯度下降公式更新权重
 1. 前向计算每个神经元的输出值
-2. 反向计算每个神经元的误差项delta(也叫敏感度 实际上是网络的损失函数Ed对神经元加权输入net的偏导)
+2. 反向计算每个神经元的误差项delta(也叫敏感度sensitivity 实际上是网络的损失函数Ed对神经元加权输入net的偏导)
 3. 得到误差项delta 来计算每个神经元连接权重的梯度   根据梯度下降算法 来更新每个权重值
 
 卷积层的训练：
@@ -58,16 +58,16 @@ cnn的训练 反向传播算法： 利用链式求导计算损失函数对每个
         对步长为S的sensitivity map相应的位置补0 将其还原成步长为1时的sensitivity map
     3. 输入深度为D
         输入深度为D filter的深度也为D了 因为di通道只与相应di通道卷积 比如input d1与filter d1卷积
-        所有用filter的di通道权重 对本层的sensitivity map卷积 得到上一层di通道的sensitivity map
+        所用filter的di通道权重 对本层的sensitivity map卷积 得到上一层di通道的sensitivity map
     4. filter数量为N
         filter数量为N 输出层的深度也为N 第i个filter卷积产生输出层的第i个feature map
         由于上一层每个加权输入都同时影响了本层所有特征图的输出值 所以反向计算误差项时 用全导数公式
         先用第d个filter对本层相应第d个sensitivity map卷积 得到一组N个上一层的偏sensitivity map
         依次 会得到d组偏sensitivity map 最后各组之间将N个偏sensitivity map按元素相加
-        得到最终N个上一层的sensitivity map
+        得到最终上一层的sensitivity map
 3. 卷积层filter权重梯度的计算
     得到本层sensitivity map 计算filter的权重梯度 由于卷积层是权重共享的
-    sensitivity map作为卷积核 在Input上进行互相关操作 就可以得到最终的权重梯度
+    把sensitivity map作为卷积核 在Input上进行互相关操作 就可以得到最终的权重梯度
     而偏置项wb的梯度 就是sensitivity map的所有误差项之和
 
 池化层Pooling层的训练：
