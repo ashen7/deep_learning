@@ -20,8 +20,10 @@
 
 #include <iostream>
 #include <iomanip>
-#include <vector>
 #include <random>
+#include <vector>
+#include <memory>
+#include <map>
 
 #include <glog/logging.h>
 
