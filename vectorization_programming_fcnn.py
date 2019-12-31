@@ -63,6 +63,7 @@ class FullConnectedLayer(object):
     def dump(self):
         print('W: {}{}\nb: {}{}'.format(self.w.shape, self.w, self.b.shape, self.b))
 
+
 # Sigmoid激活函数类
 class SigmoidActivator(object):
     def forward(self, weighted_input):
@@ -132,7 +133,7 @@ class NeuralNetwork(object):
 
     def calc_gradient(self, label):
         '''
-        节点是输出层时  输出节点的误差项delta = predict_y(1-predict_y)(y-predict_y)
+        节点是输出层时  输出节点的误差项delta = output(1-output)(label-output)
         有了输出层的delta 从输出层反向计算 依次得到前面层的误差项 以及该层w和b的梯度 更新权重时使用
         '''
         delta = self.layers[-1].activator.backward(self.layers[-1].output) * \
