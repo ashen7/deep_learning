@@ -77,9 +77,9 @@ def get_training_data_set(count):
     '''
     获得训练数据集
     '''
-    image_loader = ImageLoader('train-images-idx3-ubyte', count)
+    image_loader = ImageLoader('mnist/train-images-idx3-ubyte', count)
     print('训练集样本导入成功...')
-    label_loader = LabelLoader('train-labels-idx1-ubyte', count)
+    label_loader = LabelLoader('mnist/train-labels-idx1-ubyte', count)
     print('训练集标签导入成功...')
     return (image_loader.load(), label_loader.load())
 
@@ -87,9 +87,9 @@ def get_test_data_set(count):
     '''
     获得测试数据集
     '''
-    image_loader = ImageLoader('t10k-images-idx3-ubyte', count)
+    image_loader = ImageLoader('mnist/t10k-images-idx3-ubyte', count)
     print('测试集样本导入成功...')
-    label_loader = LabelLoader('t10k-labels-idx1-ubyte', count)
+    label_loader = LabelLoader('mnist/t10k-labels-idx1-ubyte', count)
     print('测试集标签导入成功...')
     return (image_loader.load(), label_loader.load())
 
