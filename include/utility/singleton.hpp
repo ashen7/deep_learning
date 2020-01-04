@@ -10,7 +10,7 @@
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  YiPeng
+ *         Author:  yipeng
  *   Organization:  
  *
  * =====================================================================================
