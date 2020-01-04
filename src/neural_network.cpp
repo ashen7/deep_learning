@@ -25,10 +25,11 @@
 
 #include <glog/logging.h>
 
-#include "utility/matrix_math_function.hpp"
+#include "utility/matrix.hpp"
 
 namespace dnn {
 NeuralNetwork::NeuralNetwork() {
+    LOG(WARNING) << "构造函数>..";
 }
 
 NeuralNetwork::~NeuralNetwork() {
@@ -93,8 +94,8 @@ void NeuralNetwork::Initialize(const std::vector<size_t>& fc_layer_nodes_array) 
  * 训练集  标签
  * 迭代轮数 和 学习率
  */
-int NeuralNetwork::Train(const std::vector<std::vector<std::vector<float>>>& training_data_set, 
-                         const std::vector<std::vector<std::vector<float>>>& labels,
+int NeuralNetwork::Train(const Matrix3d& training_data_set, 
+                         const Matrix3d& labels,
                          int epoch, float learning_rate) {
     //迭代轮数
     for (int i = 0; i < epoch; i++) {
@@ -105,6 +106,10 @@ int NeuralNetwork::Train(const std::vector<std::vector<std::vector<float>>>& tra
                 return -1;
             }
         }
+        std::vector<std::vector<float>> output_array;
+        Predict(training_data_set[training_data_set.size() - 1], output_array);
+        LOG(WARNING) << "after epoch " << i << " loss: " 
+                     << Loss(output_array, labels[labels.size() - 1]);
     }
 }
 
@@ -114,11 +119,11 @@ int NeuralNetwork::Train(const std::vector<std::vector<std::vector<float>>>& tra
  * CalcGradient 反向计算 从输出层开始往前计算每层的误差项 和权重梯度 偏置梯度
  * UpdateWeights 得到了梯度 利用梯度下降优化算法 更新权重和偏置
  */
-int NeuralNetwork::TrainOneSample(const std::vector<std::vector<float>>& input_array, 
-                                  const std::vector<std::vector<float>>& label, 
+int NeuralNetwork::TrainOneSample(const Matrix2d& sample, 
+                                  const Matrix2d& label, 
                                   float learning_rate) {
     std::vector<std::vector<float>> output_array;
-    if (0 != Predict(input_array, output_array)) {
+    if (0 != Predict(sample, output_array)) {
         return -1;
     }
 
@@ -134,8 +139,8 @@ int NeuralNetwork::TrainOneSample(const std::vector<std::vector<float>>& input_a
 /* 
  * 前向计算 实现预测 也就是利用当前网络的权值计算节点的输出值 
  */
-int NeuralNetwork::Predict(const std::vector<std::vector<float>>& input_array, 
-                           std::vector<std::vector<float>>& output_array) {
+int NeuralNetwork::Predict(const Matrix2d& input_array, 
+                           Matrix2d& output_array) {
     for (int i = 0; i < fc_layers_array_.size(); i++) {
         if (0 == i) {
             if (0 != fc_layers_array_[i]->Forward(input_array)) {
@@ -159,8 +164,8 @@ int NeuralNetwork::Predict(const std::vector<std::vector<float>>& input_array,
  * 通过输出层的delta 从输出层反向计算 依次得到前面每层的误差项 
  * 得到误差项再计算梯度 更新权重使用
  */
-int NeuralNetwork::CalcGradient(const std::vector<std::vector<float>>& output_array, 
-                                const std::vector<std::vector<float>>& label) {
+int NeuralNetwork::CalcGradient(const Matrix2d& output_array, 
+                                const Matrix2d& label) {
     //得到输出节点output
     //const auto& output_array = fc_layers_array_[fc_layers_array_.size() - 1]->get_output_array();
     
@@ -176,12 +181,12 @@ int NeuralNetwork::CalcGradient(const std::vector<std::vector<float>>& output_ar
      
     //计算(label - output)
     std::vector<std::vector<float>> sub_array; 
-    if (0 != calculate::matrix::MatrixSubtract(label, output_array, sub_array)) {
+    if (0 != Matrix::MatrixSubtract(label, output_array, sub_array)) {
         return -1;
     }
 
     //再计算output(1 - output)(label - output)  得到输出层的delta array误差项
-    if (0 != calculate::matrix::MatrixHadamarkProduct(delta_array, sub_array, delta_array)) {
+    if (0 != Matrix::MatrixHadamarkProduct(delta_array, sub_array, delta_array)) {
         return -1;
     }
     
@@ -213,8 +218,25 @@ void NeuralNetwork::Dump() const noexcept {
 }
 
 //损失函数  计算均方误差 
-float NeuralNetwork::Loss() const noexcept {
+float NeuralNetwork::Loss(const Matrix2d& output_array, 
+                          const Matrix2d& label) const noexcept {
+    return Matrix::MeanSquareError(output_array, label);
+}
 
+//梯度检查
+int NeuralNetwork::GradientCheck(const Matrix2d& sample, 
+                                 const Matrix2d& label) {
+    //获得网络在当前样本下每个权值的梯度
+    Matrix2d output_array;
+    Predict(sample, output_array);
+    CalcGradient(output_array, label);
+    
+    float epsilon = 0.0001;
+    //遍历全连接层的权重数组 每个值都加减一个很小的值 看loss浮动大不大
+    for (auto fc_layer : fc_layers_array_) {
+        //for (int i = 0; i < )
+    }
 }
 
 }    //namespace dnn
+

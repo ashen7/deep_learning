@@ -23,6 +23,7 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <tuple>
 #include <chrono>
 #include <thread>
 #include <ratio>
@@ -32,8 +33,8 @@
 
 #include "neural_network.h"
 #include "full_connected_layer.h"
-#include "utility/matrix_math_function.hpp"
 #include "utility/normalizer.hpp"
+#include "utility/matrix.hpp"
 
 //构造训练数据集
 static void TrainDataSet(std::vector<std::vector<std::vector<float>>>& data_set, 
@@ -58,33 +59,31 @@ static void TestFCNN() {
     std::vector<std::vector<std::vector<float>>> labels;
     TrainDataSet(data_set, labels);
     
-    //神经网络对象
-    dnn::NeuralNetwork neural_network;
     //三层节点 8 10 8
     std::vector<size_t> fc_layer_nodes_array{8, 10, 8};
-    neural_network.Initialize(fc_layer_nodes_array);
+    SingletonNeuralNetwork::Instance().Initialize(fc_layer_nodes_array);
     
     float learning_rate = 0.3;   //学习率
-    size_t batch_size = 1;      //batch大小
+    size_t batch_size = 10;      //batch大小
     size_t epoch = 1;           //迭代轮数
     
     std::vector<std::vector<float>> output_array;
-    neural_network.Predict(data_set[128], output_array);
-    uint8_t number;
-    number = utility::Normalizer::Denormalize(output_array);
-    //calculate::matrix::MatrixShow(output_array);
-    LOG(WARNING) << "预测的值为: " << (int)number;
     for (int i = 0; i < epoch; i++) {
-        //训练1轮
-        neural_network.Train(data_set, labels, batch_size, learning_rate);
+        //训练完成1轮
+        SingletonNeuralNetwork::Instance().Train(data_set, labels, batch_size, learning_rate);
+        //打印loss 均方误差的值 看看是否收敛
+        SingletonNeuralNetwork::Instance().Predict(data_set[data_set.size() - 1], output_array);
+        LOG(WARNING) << "after epoch " << i << " loss: " 
+                     << SingletonNeuralNetwork::Instance().Loss(output_array, labels[labels.size() - 1]);
+        learning_rate /= 2.0;
     }
 
-    neural_network.Predict(data_set[128], output_array);
-    number = utility::Normalizer::Denormalize(output_array);
+    //neural_network.Predict(data_set[128], output_array);
+    //number = utility::Normalizer::Denormalize(output_array);
     //calculate::matrix::MatrixShow(output_array);
-    LOG(WARNING) << "预测的值为: " << (int)number;
+    //LOG(WARNING) << "预测的值为: " << (int)number;
 
-    neural_network.Dump();
+    SingletonNeuralNetwork::Instance().Dump();
 }
 
 
@@ -100,11 +99,8 @@ int main(int argc, char* argv[]) {
     //TestFCNN();
     std::vector<std::vector<float>> a;
     std::vector<std::vector<float>> b;
-    calculate::matrix::CreateOnesMatrix(3, 3, a);
-    calculate::matrix::MatrixShow(a);
-    LOG(WARNING) << calculate::matrix::MatrixSum(a);
-    calculate::matrix::TransposeMatrix(a, b);
-    calculate::matrix::MatrixShow(b);
+
+    TestFCNN();
 
     //记录结束时间
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
@@ -120,4 +116,6 @@ int main(int argc, char* argv[]) {
     google::ShutdownGoogleLogging();
     
     return 0;
+
 }
+
