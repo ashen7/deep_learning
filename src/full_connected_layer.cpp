@@ -15,15 +15,21 @@
  *
  * =====================================================================================
  */
-#include "utility/full_connected_layer.h"
+#include "full_connected_layer.h"
 
 #include <memory>
 #include <vector>
 #include <functional>
 
-#include "matrix_math_function.hpp"
+#include <glog/logging.h>
+
+#include "utility/matrix_math_function.hpp"
 
 namespace dnn {
+
+//静态成员的初始化
+FullConnectedLayer::SigmoidActivatorCallback FullConnectedLayer::forward_activator_callback_(nullptr);
+FullConnectedLayer::SigmoidActivatorCallback FullConnectedLayer::backward_activator_callback_(nullptr);
 
 FullConnectedLayer::FullConnectedLayer() {
 }
