@@ -15,16 +15,19 @@
  *
  * =====================================================================================
  */
-#include "utility/neural_network.h"
+#include "neural_network.h"
+#include "full_connected_layer.h"
+
+#include "math.h"
 
 #include <vector>
 #include <memory>
 
+#include <glog/logging.h>
+
+#include "utility/matrix_math_function.hpp"
 
 namespace dnn {
-//类的前置声明
-class dnn::FullConnectedLayer;
-
 NeuralNetwork::NeuralNetwork() {
 }
 
@@ -55,6 +58,7 @@ void NeuralNetwork::Initialize(const std::vector<size_t>& fc_layer_nodes_array) 
                 output_array = input_array;
             }
 
+            //计算 1 / (1 + exp(-input_array))
             for (int i = 0; i < input_array.size(); i++) {
                 for (int j = 0; j < input_array[i].size(); j++) {
                     //exp返回e的x次方 得到0. 1. 2.值 加上1都大于1了 然后用1除  最后都小于1
@@ -74,11 +78,11 @@ void NeuralNetwork::Initialize(const std::vector<size_t>& fc_layer_nodes_array) 
                 delta_array = output_array;
             }
 
-            std::vector<std::vector<float>> temp_array;
-            float value = 1.0;
-            calculate::matrix::ValueSubMatrix(value, output_array, temp_array);
-            if (0 != calculate::matrix::MatrixHadamarkProduct(output_array, temp_array, delta_array)) {
-                return -1;
+            //计算 output(1 - output)
+            for (int i = 0; i < output_array.size(); i++) {
+                for (int j = 0; j < output_array[i].size(); j++) {
+                    delta_array[i][j] = output_array[i][j] * (1.0 - output_array[i][j]);
+                }
             }
         }, std::placeholders::_1, std::placeholders::_2));
     }
