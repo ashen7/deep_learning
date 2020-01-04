@@ -21,7 +21,7 @@
 #include <vector>
 #include <memory>
 
-//#include "full_connected_layer.h"
+#include "utility/singleton.hpp"
 
 namespace dnn {
 
@@ -31,6 +31,10 @@ class FullConnectedLayer;
 //神经网络类
 class NeuralNetwork {
 public:
+    //这里只用到float类型 设置一个类型别名
+    typedef std::vector<std::vector<float>> Matrix2d;
+    typedef std::vector<std::vector<std::vector<float>>> Matrix3d;
+
     NeuralNetwork();
     ~NeuralNetwork();
     NeuralNetwork(const NeuralNetwork&) = delete;
@@ -40,29 +44,37 @@ public:
 
 public:
     void Initialize(const std::vector<size_t>& fc_layer_nodes_array);
-    int Train(const std::vector<std::vector<std::vector<float>>>& training_data_set, 
-              const std::vector<std::vector<std::vector<float>>>& labels,
+    int Train(const Matrix3d& training_data_set, 
+              const Matrix3d& labels,
               int epoch, float learning_rate);
-    int Predict(const std::vector<std::vector<float>>& input_array, 
-                std::vector<std::vector<float>>& output_array);
-    int CalcGradient(const std::vector<std::vector<float>>& output_array, 
-                     const std::vector<std::vector<float>>& label);
+    int Predict(const Matrix2d& input_array, 
+                Matrix2d& output_array);
+    int CalcGradient(const Matrix2d& output_array, 
+                     const Matrix2d& label);
     void UpdateWeights(float learning_rate);
     void Dump() const noexcept;
-    float Loss() const noexcept;
+    float Loss(const Matrix2d& output_array, 
+               const Matrix2d& label) const noexcept;
+    int GradientCheck(const Matrix2d& sample, 
+                      const Matrix2d& label);
 
 protected:
     //内部函数
-    int TrainOneSample(const std::vector<std::vector<float>>& input_array, 
-                       const std::vector<std::vector<float>>& label, 
+    int TrainOneSample(const Matrix2d& sample, 
+                       const Matrix2d& label, 
                        float learning_rate);
 
 private:
     std::vector<std::shared_ptr<FullConnectedLayer>> fc_layers_array_;
 };
 
-
 }      //namespace dnn
+
+//单例模式
+typedef typename utility::Singleton<dnn::NeuralNetwork> SingletonNeuralNetwork;
+
+
+
 
 #endif //DNN_NEURAL_NETWORK_H_
 

@@ -27,8 +27,9 @@ namespace dnn {
 //全连接层实现类
 class FullConnectedLayer {
 public:
-    typedef std::function<void(const std::vector<std::vector<float>>&, 
-                               std::vector<std::vector<float>>&)> SigmoidActivatorCallback;
+    typedef std::vector<std::vector<float>> Matrix2d;
+    typedef std::vector<std::vector<std::vector<float>>> Matrix3d;
+    typedef std::function<void(const Matrix2d&, Matrix2d&)> SigmoidActivatorCallback;
     FullConnectedLayer();
     ~FullConnectedLayer();
     FullConnectedLayer(const FullConnectedLayer&) = delete;
@@ -63,8 +64,8 @@ public:
 
 public:
     void Initialize(size_t input_node_size, size_t output_node_size); 
-    int Forward(const std::vector<std::vector<float>>& input_array);
-    int Backward(const std::vector<std::vector<float>>& output_delta_array);
+    int Forward(const Matrix2d& input_array);
+    int Backward(const Matrix2d& output_delta_array);
     void UpdateWeights(float learning_rate);
     void Dump() const noexcept;
 
@@ -73,15 +74,15 @@ protected:
     static SigmoidActivatorCallback backward_activator_callback_; //激活函数的反向计算 
 
 private:
-    size_t input_node_size_;     //输入节点
-    size_t output_node_size_;    //输出节点
-    std::vector<std::vector<float>> weights_array_;          //权重数组
-    std::vector<std::vector<float>> biases_array_;           //偏执数组
-    std::vector<std::vector<float>> input_array_;            //输入数组
-    std::vector<std::vector<float>> output_array_;           //输出数组
-    std::vector<std::vector<float>> delta_array_;            //误差数组
-    std::vector<std::vector<float>> weights_gradient_array_; //权重梯度数组
-    std::vector<std::vector<float>> biases_gradient_array_;  //偏置梯度数组
+    size_t input_node_size_;          //输入节点
+    size_t output_node_size_;         //输出节点
+    Matrix2d weights_array_;          //权重数组
+    Matrix2d biases_array_;           //偏执数组
+    Matrix2d input_array_;            //输入数组
+    Matrix2d output_array_;           //输出数组
+    Matrix2d delta_array_;            //误差数组
+    Matrix2d weights_gradient_array_; //权重梯度数组
+    Matrix2d biases_gradient_array_;  //偏置梯度数组
 };
 
 
