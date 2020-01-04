@@ -10,7 +10,7 @@
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  YiPeng 
+ *         Author:  yipeng 
  *   Organization:  
  *
  * =====================================================================================
@@ -242,8 +242,7 @@ int Matrix<DataType>::MatrixAdd(const Matrix2d& add_matrix,
 
     //判断一下输出的矩阵是否是空 还没有初始化
     if (0 == result_matrix.size()) {
-        result_matrix = Matrix2d(add_matrix.size(),  
-                                                           a(add_matrix[0].size()));
+        result_matrix = Matrix2d(add_matrix.size(), Matrix1d(add_matrix[0].size()));
     }
         
     //矩阵相加
@@ -276,8 +275,7 @@ int Matrix<DataType>::MatrixSubtract(const Matrix2d& sub_matrix,
 
     //判断一下输出的矩阵是否是空 还没有初始化
     if (0 == result_matrix.size()) {
-        result_matrix = Matrix2d(sub_matrix.size(),  
-                                                           a(sub_matrix[0].size()));
+        result_matrix = Matrix2d(sub_matrix.size(), Matrix1d(sub_matrix[0].size()));
     }
         
     //矩阵相减
