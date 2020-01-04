@@ -23,7 +23,7 @@
 
 #include <vector>
 
-#include "matrix_math_function.hpp"
+#include "matrix.hpp"
 
 namespace utility {
 //归一化
@@ -64,7 +64,7 @@ void Normalizer::Normalize(uint8_t number,
         }
     }
 
-    calculate::matrix::MatrixReshape(data, result_matrix, 8, 1);
+    Matrix::MatrixReshape(data, 8, 1, result_matrix);
 }
 
 uint8_t Normalizer::Denormalize(const std::vector<std::vector<float>>& model_predict_output) {
