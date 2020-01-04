@@ -25,10 +25,10 @@
 #include <glog/logging.h>
 #include <gflags/gflags.h>
 
-#include "neural_network.h"
-#include "full_connected_layer.h"
-#include "matrix_math_function.hpp"
-#include "normalizer.hpp"
+#include "utility/neural_network.h"
+#include "utility/full_connected_layer.h"
+#include "utility/matrix_math_function.hpp"
+#include "utility/normalizer.hpp"
 
 //构造训练数据集
 static void TrainDataSet(std::vector<std::vector<std::vector<float>>>& data_set, 
@@ -79,9 +79,14 @@ int main(int argc, char* argv[]) {
     FLAGS_stderrthreshold = 0;
     FLAGS_colorlogtostderr = true;
 
-    TestFCNN();
+    //TestFCNN();
+    std::vector<std::vector<float>> a;
+    std::vector<std::vector<float>> b;
+    calculate::random::Uniform(0, 6, 3, 3, a);
+    calculate::matrix::MatrixShow(a);
+    calculate::matrix::TransposeMatrix(a, b);
+    calculate::matrix::MatrixShow(b);
     
-
     google::ShutdownGoogleLogging();
     
     return 0;

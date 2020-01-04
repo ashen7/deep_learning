@@ -18,8 +18,14 @@
 #ifndef MATRIX_MATH_FUNCTIONS_HPP_
 #define MATRIX_MATH_FUNCTIONS_HPP_
 
+#include <math.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <iostream>
 #include <iomanip>
+#include <string>
 #include <random>
 #include <vector>
 #include <memory>
@@ -28,7 +34,78 @@
 #include <glog/logging.h>
 
 namespace calculate {
+namespace matrix {
 
+// 函数声明
+// 矩阵相乘  dot product 点积
+template <class DataType=float>
+int MatrixMultiply(const std::vector<std::vector<DataType>>& left_matrix, 
+                   const std::vector<std::vector<DataType>>& right_matrix, 
+                   std::vector<std::vector<DataType>>& result_matrix); 
+
+// 矩阵对应位置相乘 hadamark积 
+template <typename DataType=float>
+int MatrixHadamarkProduct(const std::vector<std::vector<DataType>>& left_matrix, 
+                          const std::vector<std::vector<DataType>>& right_matrix, 
+                          std::vector<std::vector<DataType>>& result_matrix);
+
+// 矩阵相加 
+template <typename DataType=float>
+int MatrixAdd(const std::vector<std::vector<DataType>>& add_matrix, 
+              const std::vector<std::vector<DataType>>& beadd_matrix, 
+              std::vector<std::vector<DataType>>& result_matrix);
+
+// 矩阵相减
+template <typename DataType=float>
+int MatrixSubtract(const std::vector<std::vector<DataType>>& sub_matrix, 
+                   const std::vector<std::vector<DataType>>& besub_matrix, 
+                   std::vector<std::vector<DataType>>& result_matrix);
+
+// 矩阵reshape 成几行几列  这是二维矩阵版
+template <typename DataType=float>
+int MatrixReshape(const std::vector<std::vector<DataType>>& source_matrix,
+                  std::vector<std::vector<DataType>>& result_matrix, 
+                  size_t rows, size_t cols);
+
+// 矩阵reshape 一维矩阵转二维矩阵版
+template <typename DataType=float>
+int MatrixReshape(const std::vector<DataType>& source_matrix,
+                  std::vector<std::vector<DataType>>& result_matrix, 
+                  size_t rows, size_t cols);
+
+// 打印二维矩阵
+template <typename DataType=float>
+void MatrixShow(const std::vector<std::vector<DataType>>& matrix);
+
+// 创建2维矩阵 初始值为0
+template <typename DataType=float>
+void CreateZerosMatrix(int rows, int cols, 
+                       std::vector<std::vector<DataType>>& matrix);
+
+// 创建2维矩阵 初始值为1
+template <typename DataType=float>
+void CreateOnesMatrix(int rows, int cols, 
+                      std::vector<std::vector<DataType>>& matrix);
+
+// 2维矩阵的装置矩阵
+template <typename DataType=float>
+int TransposeMatrix(const std::vector<std::vector<DataType>>& source_matrix, 
+                    std::vector<std::vector<DataType>>& result_matrix);
+
+// 1个值 乘以 一个2d矩阵
+template <typename DataType=float>
+void MatrixMulValue(const std::vector<std::vector<DataType>>& source_matrix, 
+                    DataType value,  
+                    std::vector<std::vector<DataType>>& result_matrix);
+
+// 1个值 乘以 一个2d矩阵
+template <typename DataType=float>
+void ValueSubMatrix(DataType value,  
+                    const std::vector<std::vector<DataType>>& source_matrix, 
+                    std::vector<std::vector<DataType>>& result_matrix);
+
+
+//函数定义
 //模板函数 矩阵相乘(dot product)点积
 template <class DataType=float>
 int MatrixMultiply(const std::vector<std::vector<DataType>>& left_matrix, 
@@ -90,12 +167,48 @@ int MatrixMultiply(const std::vector<std::vector<DataType>>& left_matrix,
         return -1;
     }
     
+    //判断输出矩阵是否初始化过
+    if (0 == result_matrix.size()) {
+        result_matrix = std::vector<std::vector<DataType>>(left_matrix_rows, 
+                                                           std::vector<DataType>(right_matrix_cols));
+    }
+
     //开始点积运算  
     for (int i = 0; i < left_matrix_rows; i++) {
         for (int j = 0; j < right_matrix_cols; j++) {
             for (int k = 0; k < left_matrix_cols; k++) {
                 result_matrix[i][j] += left_matrix[i][k] * right_matrix[k][j];
             }
+        }
+    }
+
+    return 0;
+}
+
+//hadamark积 也就是矩阵相应位置相乘
+template <typename DataType=float>
+int MatrixHadamarkProduct(const std::vector<std::vector<DataType>>& left_matrix, 
+                          const std::vector<std::vector<DataType>>& right_matrix, 
+                          std::vector<std::vector<DataType>>& result_matrix) {
+    if (left_matrix.size() != right_matrix.size()) {
+        LOG(WARNING) << "Hadamark积失败, 矩阵行数不同...";
+        return -1;
+    }
+    
+    for (int i = 0; i < left_matrix.size(); i++) {
+        if (left_matrix[i].size() != right_matrix[i].size()) {
+            LOG(WARNING) << "Hadamark积失败, 矩阵列数不同...";
+            return -1;
+        }
+    }
+
+    if (0 == result_matrix.size()) {
+        result_matrix = left_matrix;
+    }
+
+    for (int i = 0; i < left_matrix.size(); i++) {
+        for (int j = 0; j < left_matrix[i].size(); j++) {
+            result_matrix[i][j] = left_matrix[i][j] * right_matrix[i][j];
         }
     }
 
@@ -119,11 +232,51 @@ int MatrixAdd(const std::vector<std::vector<DataType>>& add_matrix,
             return -1;
         }
     }
+
+    //判断一下输出的矩阵是否是空 还没有初始化
+    if (0 == result_matrix.size()) {
+        result_matrix = std::vector<std::vector<DataType>>(add_matrix.size(),  
+                                                           std::vector<DataType>(add_matrix[0].size()));
+    }
         
     //矩阵相加
     for (int i = 0; i < add_matrix.size(); i++) {
         for (int j = 0; j < add_matrix[i].size(); j++) {
             result_matrix[i][j] = add_matrix[i][j] + beadd_matrix[i][j];
+        }
+    }
+
+    return 0;
+}
+
+//矩阵相减
+template <typename DataType=float>
+int MatrixSubtract(const std::vector<std::vector<DataType>>& sub_matrix, 
+                   const std::vector<std::vector<DataType>>& besub_matrix, 
+                   std::vector<std::vector<DataType>>& result_matrix) {
+    if (sub_matrix.size() != besub_matrix.size()) {
+        LOG(WARNING) << "矩阵相减失败, 矩阵行数不同...";
+        return -1;
+    }
+    
+    //遍历每行 是否每列都是相同的
+    for (int i = 0; i < sub_matrix.size(); i++) {
+        if (sub_matrix[i].size() != besub_matrix[i].size()) {
+            LOG(WARNING) << "矩阵相加失败, 矩阵列数不同...";
+            return -1;
+        }
+    }
+
+    //判断一下输出的矩阵是否是空 还没有初始化
+    if (0 == result_matrix.size()) {
+        result_matrix = std::vector<std::vector<DataType>>(sub_matrix.size(),  
+                                                           std::vector<DataType>(sub_matrix[0].size()));
+    }
+        
+    //矩阵相减
+    for (int i = 0; i < sub_matrix.size(); i++) {
+        for (int j = 0; j < sub_matrix[i].size(); j++) {
+            result_matrix[i][j] = sub_matrix[i][j] - besub_matrix[i][j];
         }
     }
 
@@ -156,10 +309,23 @@ int MatrixReshape(const std::vector<std::vector<DataType>>& source_matrix,
     }
     
     index = 0;
-    //再赋值给新数组
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            result_matrix[i][j] = matrix_data[index++];    
+    //再赋值给新数组  判断一下输出矩阵有没有初始化
+    if (0 == result_matrix.size()) {
+        result_matrix.reserve(rows);
+
+        for (int i = 0; i < rows; i++) {
+            std::vector<DataType> cols_array;
+            cols_array.reserve(cols);
+            for (int j = 0; j < cols; j++) {
+                cols_array.push_back(matrix_data[index++]);
+            }
+            result_matrix.push_back(cols_array);
+        }
+    } else {
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                result_matrix[i][j] = matrix_data[index++];    
+            }
         }
     }
 
@@ -178,6 +344,12 @@ int MatrixReshape(const std::vector<DataType>& source_matrix,
         LOG(WARNING) << "输入矩阵不能reshape成指定形状";
         return -1;
     }
+    
+    //判断输出矩阵有没有初始化
+    if (0 == result_matrix.size()) {
+        result_matrix = std::vector<std::vector<DataType>>(rows, 
+                                                           std::vector<DataType>(cols));
+    }
 
     int index = 0;
     //再赋值给新数组
@@ -193,12 +365,37 @@ int MatrixReshape(const std::vector<DataType>& source_matrix,
 //打印矩阵
 template <typename DataType=float>
 void MatrixShow(const std::vector<std::vector<DataType>>& matrix) {
+    if (0 == matrix.size()) {
+        LOG(WARNING) << "矩阵为空...";
+        return ;
+    }
+
     for (int i = 0; i < matrix.size(); i++) {
         for (int j = 0; j < matrix[i].size(); j++) {
             if (0 == j) {
                 std::cout << "  [";
-           }
-            std::cout << std::showpoint << "  " << matrix[i][j];
+            }
+
+            //如果是负数 则会多占一格 那么是正数 就多加个空格
+            //设置浮点的格式 后面6位
+            int space_number = 0;
+            if (matrix[i][j] >= 0) {
+                if ((matrix[i][j] / 10.0) < 1.0) {
+                    space_number = 3;
+                } else {
+                    space_number = 2;
+                }
+            } else {
+                if ((matrix[i][j] / 10.0) < 1.0) {
+                    space_number = 2;
+                } else {
+                    space_number = 1;
+                }
+            }
+
+            std::cout << std::showpoint << std::setiosflags(std::ios::fixed)
+                      << std::setprecision(6) << std::string(space_number, ' ')
+                      << matrix[i][j];
             
             if ((j + 1) == matrix[i].size()) {
                 std::cout << "  ]" << std::endl;
@@ -212,6 +409,10 @@ void MatrixShow(const std::vector<std::vector<DataType>>& matrix) {
 template <typename DataType=float>
 void CreateZerosMatrix(int rows, int cols, 
                        std::vector<std::vector<DataType>>& matrix) {
+    if (0 != matrix.size()) {
+        matrix.clear();
+    }
+    
     matrix.reserve(rows);
 
     for (int i = 0; i < rows; i++) {
@@ -227,6 +428,10 @@ void CreateZerosMatrix(int rows, int cols,
 template <typename DataType=float>
 void CreateOnesMatrix(int rows, int cols, 
                       std::vector<std::vector<DataType>>& matrix) {
+    if (0 != matrix.size()) {
+        matrix.clear();
+    }
+
     matrix.reserve(rows);
 
     for (int i = 0; i < rows; i++) {
@@ -238,16 +443,103 @@ void CreateOnesMatrix(int rows, int cols,
     }
 }
 
+//转置矩阵
+template <typename DataType=float>
+int TransposeMatrix(const std::vector<std::vector<DataType>>& source_matrix, 
+                    std::vector<std::vector<DataType>>& result_matrix) {
+    int source_matrix_cols = 0;
+    int source_matrix_rows = source_matrix.size();
+    //检查源矩阵每列是否相同
+    for (int i = 0; i < source_matrix.size(); i++) {
+        if (0 == i) {
+           source_matrix_cols = source_matrix[i].size();
+        } else {
+            if (source_matrix_cols != source_matrix[i].size()) {
+               LOG(WARNING) << "输入矩阵每行的列数不相同...";
+               return -1;
+            }
+        }
+    }
+    
+    //如果数组数据没有初始化 就用移动赋值函数初始化 
+    //行为原矩阵的列 列为原矩阵的行 比如2 * 4  变成4 * 2
+    if (0 == result_matrix.size()) {
+        result_matrix = std::vector<std::vector<DataType>>(source_matrix_cols, 
+                                                           std::vector<DataType>(source_matrix_rows));
+    }
+
+    for (int i = 0; i < source_matrix.size(); i++) {
+        for (int j = 0; j < source_matrix[i].size(); j++) {
+            result_matrix[j][i] = source_matrix[i][j];
+        }
+    }
+
+    return 0;
+}
+
+template <typename DataType=float>
+void MatrixMulValue(const std::vector<std::vector<DataType>>& source_matrix, 
+                    DataType value,  
+                    std::vector<std::vector<DataType>>& result_matrix) {
+    if (0 == result_matrix.size()) {
+        result_matrix = source_matrix;
+    }
+
+    for (int i = 0; i < source_matrix.size(); i++) {
+        for (int j = 0; j < source_matrix[i].size(); j++) {
+            result_matrix[i][j] = source_matrix[i][j] * value;
+        }
+    }
+}
+
+template <typename DataType=float>
+void ValueSubMatrix(DataType value,  
+                    const std::vector<std::vector<DataType>>& source_matrix, 
+                    std::vector<std::vector<DataType>>& result_matrix) {
+    if (0 == result_matrix.size()) {
+        result_matrix = source_matrix;
+    }
+
+    for (int i = 0; i < source_matrix.size(); i++) {
+        for (int j = 0; j < source_matrix[i].size(); j++) {
+            result_matrix[i][j] = value - source_matrix[i][j];
+        }
+    }
+}
+
+
+
+
+
+
+
+}     //namespace matrix
+
 //随机数生成
 namespace random {
 
-//生成一个 rows * cols的随机数矩阵 值的范围在a 到 b之间
+//函数声明
+//生成正态分布的随机数二维矩阵`
+template <typename DataType=float>
+int Uniform(float a, float b, int rows, int cols, 
+            std::vector<std::vector<DataType>>& random_matrix);
+
+template <typename DataType=float>
+int Random(int a, int b, int rows, int cols, 
+           std::vector<std::vector<DataType>>& random_matrix);
+
+//生成一个 rows * cols的随机数矩阵 值的范围在a 到 b之间 
 template <typename DataType=float>
 int Uniform(float a, float b, int rows, int cols, 
             std::vector<std::vector<DataType>>& random_matrix) {
     if (b < a) {
         LOG(WARNING) << "随机数生成错误 下限大于上限";
         return -1;
+    }
+    
+    //判断输出矩阵是否初始化过
+    if (0 != random_matrix.size()) {
+        random_matrix.clear();
     }
 
     random_matrix.reserve(rows);
@@ -267,6 +559,37 @@ int Uniform(float a, float b, int rows, int cols,
 
     return 0;
 }
+
+template <typename DataType=float>
+int Random(int a, int b, int rows, int cols,  
+           std::vector<std::vector<DataType>>& random_matrix) {
+    if (b < a) {
+        LOG(WARNING) << "随机数生成错误 下限大于上限";
+        return -1;
+    }
+
+    if (0 == random_matrix.size()) {
+        matrix::CreateZerosMatrix(rows, cols, random_matrix);
+    }
+
+    DataType random_value = 0;
+    //用time函数的返回值 来做seed种子
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            srand((unsigned int)time(NULL) + i * cols + j * 100000);
+            if (a >= 0) {
+                random_value = rand() % b + a;
+                random_value > b ? b : random_value;
+            } else {
+                random_value = rand() % (b - a) + a;
+            }
+            random_matrix[i][j] = random_value;
+        }
+    }
+
+    return 0;
+}
+
 
 }         //namespace random
 }         //namespace calculate

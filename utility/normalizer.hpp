@@ -65,7 +65,7 @@ void Normalizer::Normalize(uint8_t number,
         }
     }
 
-    calculate::MatrixReshape(data, result_matrix, 8, 1);
+    calculate::matrix::MatrixReshape(data, result_matrix, 8, 1);
 }
 
 void Normalizer::Denormalize(const std::vector<std::vector<float>>& model_predict_output, 
