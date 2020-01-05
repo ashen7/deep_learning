@@ -36,14 +36,25 @@
 #include "utility/normalizer.hpp"
 #include "utility/matrix.hpp"
 
+//gfalgs 
+DEFINE_double(learning_rate, 0.3, "AI model train learning rate");
+DEFINE_int32(batch_size, 20, "AI model train batch size");
+DEFINE_int32(epoch, 10, "AI model train iterator epoch");
+
+static void TrainDataSet(std::vector<std::vector<std::vector<double>>>& data_set, 
+                         std::vector<std::vector<std::vector<double>>>& labels);
+static void TestFCNN();
+static void TestGradient();
+static double GetCorrectRatio();
+
 //构造训练数据集
-static void TrainDataSet(std::vector<std::vector<std::vector<float>>>& data_set, 
-                         std::vector<std::vector<std::vector<float>>>& labels) {
+void TrainDataSet(std::vector<std::vector<std::vector<double>>>& data_set, 
+                  std::vector<std::vector<std::vector<double>>>& labels) {
     data_set.reserve(256);
     labels.reserve(256);
 
     for (int i = 0; i < 256; i++) {
-        std::vector<std::vector<float>> data(8, std::vector<float>(1));
+        std::vector<std::vector<double>> data(8, std::vector<double>(1));
         //归一化
         utility::Normalizer::Normalize(i, data);
         data_set.push_back(data);
@@ -52,40 +63,67 @@ static void TrainDataSet(std::vector<std::vector<std::vector<float>>>& data_set,
 }
 
 //测试FCNN
-static void TestFCNN() {
+void TestFCNN() {
     //存储 输入特征x (8行1列)的列向量  
-    std::vector<std::vector<std::vector<float>>> data_set;
+    std::vector<std::vector<std::vector<double>>> data_set;
     //存储 真实值y   (8行1列)的列向量
-    std::vector<std::vector<std::vector<float>>> labels;
+    std::vector<std::vector<std::vector<double>>> labels;
     TrainDataSet(data_set, labels);
     
     //三层节点 8 10 8
     std::vector<size_t> fc_layer_nodes_array{8, 10, 8};
     SingletonNeuralNetwork::Instance().Initialize(fc_layer_nodes_array);
     
-    float learning_rate = 0.3;   //学习率
-    size_t batch_size = 10;      //batch大小
-    size_t epoch = 1;           //迭代轮数
-    
-    std::vector<std::vector<float>> output_array;
-    for (int i = 0; i < epoch; i++) {
+    std::vector<std::vector<double>> output_array;
+    for (int i = 0; i < FLAGS_epoch; i++) {
         //训练完成1轮
-        SingletonNeuralNetwork::Instance().Train(data_set, labels, batch_size, learning_rate);
+        SingletonNeuralNetwork::Instance().Train(data_set, labels, FLAGS_batch_size, FLAGS_learning_rate);
+        
         //打印loss 均方误差的值 看看是否收敛
-        SingletonNeuralNetwork::Instance().Predict(data_set[data_set.size() - 1], output_array);
+        SingletonNeuralNetwork::Instance().Predict(data_set[100], output_array);
+        double correct_ratio = GetCorrectRatio();
         LOG(WARNING) << "after epoch " << i << " loss: " 
-                     << SingletonNeuralNetwork::Instance().Loss(output_array, labels[labels.size() - 1]);
-        learning_rate /= 2.0;
+                     << SingletonNeuralNetwork::Instance().Loss(output_array, labels[100])
+                     << ", correct ratio: %" << correct_ratio;
+        //得到当前的正确率
+        FLAGS_learning_rate /= 2.0;
     }
 
-    //neural_network.Predict(data_set[128], output_array);
-    //number = utility::Normalizer::Denormalize(output_array);
-    //calculate::matrix::MatrixShow(output_array);
-    //LOG(WARNING) << "预测的值为: " << (int)number;
-
-    SingletonNeuralNetwork::Instance().Dump();
+    //SingletonNeuralNetwork::Instance().Dump();
 }
 
+//梯度检查
+void TestGradient() {
+    //存储 输入特征x (8行1列)的列向量  
+    std::vector<std::vector<std::vector<double>>> data_set;
+    //存储 真实值y   (8行1列)的列向量
+    std::vector<std::vector<std::vector<double>>> labels;
+    TrainDataSet(data_set, labels);
+    
+    //初始化神经网络
+    std::vector<size_t> fc_layer_nodes_array{8, 10, 8};
+    SingletonNeuralNetwork::Instance().Initialize(fc_layer_nodes_array);
+
+    //梯度检查
+    SingletonNeuralNetwork::Instance().GradientCheck(data_set[2], labels[2]);
+}
+
+//用正确率来评估网络
+double GetCorrectRatio() {
+    double correct = 0.0;
+    std::vector<std::vector<double>> input_array;
+    std::vector<std::vector<double>> output_array;
+
+    for (int i = 0; i < 256; i++) {
+        utility::Normalizer::Normalize(i, input_array);
+        SingletonNeuralNetwork::Instance().Predict(input_array, output_array);
+        if (i == int(utility::Normalizer::Denormalize(output_array))) {
+            correct += 1.0;
+        }
+    }
+    
+    return correct / 256 * 100;
+}
 
 int main(int argc, char* argv[]) {
     google::ParseCommandLineFlags(&argc, &argv, true);
@@ -96,11 +134,9 @@ int main(int argc, char* argv[]) {
 
     //记录开始时间
     std::chrono::system_clock::time_point begin = std::chrono::system_clock::now();
-    //TestFCNN();
-    std::vector<std::vector<float>> a;
-    std::vector<std::vector<float>> b;
 
     TestFCNN();
+    //TestGradient();
 
     //记录结束时间
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
@@ -111,7 +147,6 @@ int main(int argc, char* argv[]) {
     std::chrono::duration<int, std::milli> milli = std::chrono::duration_cast<
                                                    std::chrono::milliseconds>(end - begin);
     //打印耗时
-    //LOG(WARNING) << "程序退出, 总共耗时: " << sec.count() << "s";
     LOG(WARNING) << "程序退出, 总共耗时: " << milli.count() << "ms";
     google::ShutdownGoogleLogging();
     
