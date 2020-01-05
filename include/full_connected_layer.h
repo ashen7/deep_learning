@@ -27,9 +27,10 @@ namespace dnn {
 //全连接层实现类
 class FullConnectedLayer {
 public:
-    typedef std::vector<std::vector<float>> Matrix2d;
-    typedef std::vector<std::vector<std::vector<float>>> Matrix3d;
+    typedef std::vector<std::vector<double>> Matrix2d;
+    typedef std::vector<std::vector<std::vector<double>>> Matrix3d;
     typedef std::function<void(const Matrix2d&, Matrix2d&)> SigmoidActivatorCallback;
+
     FullConnectedLayer();
     ~FullConnectedLayer();
     FullConnectedLayer(const FullConnectedLayer&) = delete;
@@ -37,12 +38,21 @@ public:
     FullConnectedLayer(FullConnectedLayer&&) = default;
     FullConnectedLayer& operator =(FullConnectedLayer&&) = default;
     
-    const std::vector<std::vector<float>>& get_output_array() const noexcept {
+    //梯度检查时 要小小的改变一下权重 来查看梯度的浮动变化
+    Matrix2d& get_weights_array() noexcept {
+        return weights_array_;
+    }
+
+    const Matrix2d& get_weights_gradient_array() const noexcept {
+        return weights_gradient_array_;
+    }
+
+    const Matrix2d& get_output_array() const noexcept {
         return output_array_;
     }
 
     //优化 复制省略
-    const std::vector<std::vector<float>>& get_delta_array() const noexcept {
+    const Matrix2d& get_delta_array() const noexcept {
         return delta_array_;
     }
 
@@ -66,7 +76,7 @@ public:
     void Initialize(size_t input_node_size, size_t output_node_size); 
     int Forward(const Matrix2d& input_array);
     int Backward(const Matrix2d& output_delta_array);
-    void UpdateWeights(float learning_rate);
+    void UpdateWeights(double learning_rate);
     void Dump() const noexcept;
 
 protected:
