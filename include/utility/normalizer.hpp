@@ -39,9 +39,9 @@ public:
 
 public:
     //位运算 输入为0-255的值 8位二进制从低位到高位 位是1就是0.9 位是0就是0.1 输出一个8维列表
-    static void Normalize(uint8_t number, std::vector<std::vector<float>>&);
+    static void Normalize(uint8_t number, std::vector<std::vector<double>>&);
     //输入为模型预测的输出值 二值化然后把值还原成最初的number 如果相等 则表明每位的预测偏差没有很大
-    static uint8_t Denormalize(const std::vector<std::vector<float>>& model_predict_output);
+    static uint8_t Denormalize(const std::vector<std::vector<double>>& model_predict_output);
 
 private:
     static std::vector<uint8_t> mask_;
@@ -52,8 +52,8 @@ std::vector<uint8_t> Normalizer::mask_{0x1, 0x2, 0x4, 0x8,
                                        0x10, 0x20, 0x40, 0x80};
 
 void Normalizer::Normalize(uint8_t number, 
-                           std::vector<std::vector<float>>& result_matrix) {
-    std::vector<float> data;
+                           std::vector<std::vector<double>>& result_matrix) {
+    std::vector<double> data;
     data.reserve(8);
     for (const auto mask : mask_) {
         //如果相与值大于0 就是0.9 代表这个值这位是1 否则是0.1 代表这个值这位是0
@@ -67,7 +67,7 @@ void Normalizer::Normalize(uint8_t number,
     Matrix::MatrixReshape(data, 8, 1, result_matrix);
 }
 
-uint8_t Normalizer::Denormalize(const std::vector<std::vector<float>>& model_predict_output) {
+uint8_t Normalizer::Denormalize(const std::vector<std::vector<double>>& model_predict_output) {
     //二值化  此时传入的矩阵是模型预测的输出值 
     //通过大于0.5取1 小于0.5取0的方式 然后把值加起来还原最开始的值 来看是否改变了
     std::vector<uint8_t> binary_array;
