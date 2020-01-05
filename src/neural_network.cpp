@@ -29,7 +29,6 @@
 
 namespace dnn {
 NeuralNetwork::NeuralNetwork() {
-    LOG(WARNING) << "构造函数>..";
 }
 
 NeuralNetwork::~NeuralNetwork() {
@@ -52,8 +51,8 @@ void NeuralNetwork::Initialize(const std::vector<size_t>& fc_layer_nodes_array) 
     //设置全连接层的前向计算激活函数回调
     if (nullptr == FullConnectedLayer::get_forward_activator_callback()) {
         FullConnectedLayer::set_forward_activator_callback(
-                std::bind([](const std::vector<std::vector<float>>& input_array, 
-                std::vector<std::vector<float>>& output_array) {
+                std::bind([](const std::vector<std::vector<double>>& input_array, 
+                std::vector<std::vector<double>>& output_array) {
             //如果输出数组未初始化 
             if (0 == output_array.size()) {
                 output_array = input_array;
@@ -72,8 +71,8 @@ void NeuralNetwork::Initialize(const std::vector<size_t>& fc_layer_nodes_array) 
     //设置全连接层的反向计算激活函数回调 得到输出层的误差项
     if (nullptr == FullConnectedLayer::get_backward_activator_callback()) {
         FullConnectedLayer::set_backward_activator_callback(
-                std::bind([](const std::vector<std::vector<float>>& output_array, 
-                std::vector<std::vector<float>>& delta_array) {
+                std::bind([](const std::vector<std::vector<double>>& output_array, 
+                std::vector<std::vector<double>>& delta_array) {
             //如果输出数组未初始化 
             if (0 == delta_array.size()) {
                 delta_array = output_array;
@@ -96,21 +95,23 @@ void NeuralNetwork::Initialize(const std::vector<size_t>& fc_layer_nodes_array) 
  */
 int NeuralNetwork::Train(const Matrix3d& training_data_set, 
                          const Matrix3d& labels,
-                         int epoch, float learning_rate) {
+                         int epoch, double learning_rate) {
     //迭代轮数
     for (int i = 0; i < epoch; i++) {
         //遍历每一个输入特征 拿去训练 训练完所有数据集 就是训练完成一轮
         for (int d = 0; d < training_data_set.size(); d++) {
-            if (0 != TrainOneSample(training_data_set[d], labels[d], learning_rate)) {
+            if (-1 == TrainOneSample(training_data_set[d], labels[d], learning_rate)) {
                 LOG(ERROR) << "训练失败...";
                 return -1;
             }
         }
-        std::vector<std::vector<float>> output_array;
-        Predict(training_data_set[training_data_set.size() - 1], output_array);
-        LOG(WARNING) << "after epoch " << i << " loss: " 
-                     << Loss(output_array, labels[labels.size() - 1]);
+        Matrix2d output_array;
+        Predict(training_data_set[100], output_array);
+        LOG(INFO) << "after batch " << i << " loss: " 
+                  << Loss(output_array, labels[100]);
     }
+
+    return 0;
 }
 
 /*
@@ -121,13 +122,13 @@ int NeuralNetwork::Train(const Matrix3d& training_data_set,
  */
 int NeuralNetwork::TrainOneSample(const Matrix2d& sample, 
                                   const Matrix2d& label, 
-                                  float learning_rate) {
-    std::vector<std::vector<float>> output_array;
-    if (0 != Predict(sample, output_array)) {
+                                  double learning_rate) {
+    Matrix2d output_array;
+    if (-1 == Predict(sample, output_array)) {
         return -1;
     }
 
-    if (0 != CalcGradient(output_array, label)) {
+    if (-1 == CalcGradient(output_array, label)) {
         return -1;
     }
 
@@ -143,11 +144,11 @@ int NeuralNetwork::Predict(const Matrix2d& input_array,
                            Matrix2d& output_array) {
     for (int i = 0; i < fc_layers_array_.size(); i++) {
         if (0 == i) {
-            if (0 != fc_layers_array_[i]->Forward(input_array)) {
+            if (-1 == fc_layers_array_[i]->Forward(input_array)) {
                 return -1;
             }
         } else {
-            if (0 != fc_layers_array_[i]->Forward(fc_layers_array_[i - 1]->get_output_array())) {
+            if (-1 == fc_layers_array_[i]->Forward(fc_layers_array_[i - 1]->get_output_array())) {
                 return -1;
             }
         }
@@ -156,6 +157,8 @@ int NeuralNetwork::Predict(const Matrix2d& input_array,
             output_array = fc_layers_array_[i]->get_output_array();
         }
     }
+
+    return 0;
 }
 
 /*
@@ -170,7 +173,7 @@ int NeuralNetwork::CalcGradient(const Matrix2d& output_array,
     //const auto& output_array = fc_layers_array_[fc_layers_array_.size() - 1]->get_output_array();
     
     //得到output(1 - output)
-    std::vector<std::vector<float>> delta_array; 
+    Matrix2d delta_array; 
     if (FullConnectedLayer::get_backward_activator_callback()) {
         auto backward_activator_callback = FullConnectedLayer::get_backward_activator_callback();
         backward_activator_callback(output_array, delta_array);
@@ -180,13 +183,13 @@ int NeuralNetwork::CalcGradient(const Matrix2d& output_array,
     }
      
     //计算(label - output)
-    std::vector<std::vector<float>> sub_array; 
-    if (0 != Matrix::MatrixSubtract(label, output_array, sub_array)) {
+    Matrix2d sub_array; 
+    if (-1 == Matrix::MatrixSubtract(label, output_array, sub_array)) {
         return -1;
     }
 
     //再计算output(1 - output)(label - output)  得到输出层的delta array误差项
-    if (0 != Matrix::MatrixHadamarkProduct(delta_array, sub_array, delta_array)) {
+    if (-1 == Matrix::MatrixHadamarkProduct(delta_array, sub_array, delta_array)) {
         return -1;
     }
     
@@ -204,7 +207,7 @@ int NeuralNetwork::CalcGradient(const Matrix2d& output_array,
 }
 
 //利用梯度下降优化算法 更新网络的权值
-void NeuralNetwork::UpdateWeights(float learning_rate) {
+void NeuralNetwork::UpdateWeights(double learning_rate) {
     for (auto fc_layer : fc_layers_array_) {
         fc_layer->UpdateWeights(learning_rate);
     }
@@ -218,23 +221,50 @@ void NeuralNetwork::Dump() const noexcept {
 }
 
 //损失函数  计算均方误差 
-float NeuralNetwork::Loss(const Matrix2d& output_array, 
+double NeuralNetwork::Loss(const Matrix2d& output_array, 
                           const Matrix2d& label) const noexcept {
     return Matrix::MeanSquareError(output_array, label);
 }
 
 //梯度检查
-int NeuralNetwork::GradientCheck(const Matrix2d& sample, 
-                                 const Matrix2d& label) {
+void NeuralNetwork::GradientCheck(const Matrix2d& sample, 
+                                  const Matrix2d& label) {
     //获得网络在当前样本下每个权值的梯度
     Matrix2d output_array;
     Predict(sample, output_array);
     CalcGradient(output_array, label);
     
-    float epsilon = 0.0001;
+    double epsilon = 0.0001;
     //遍历全连接层的权重数组 每个值都加减一个很小的值 看loss浮动大不大
+    size_t weights_rows = 0;
+    size_t weights_cols = 0;
     for (auto fc_layer : fc_layers_array_) {
-        //for (int i = 0; i < )
+        auto& weights_array = fc_layer->get_weights_array();
+        //元祖解包
+        std::tie(weights_rows, weights_cols) = Matrix::GetMatrixShape(weights_array);
+        for (int i = 0; i < weights_rows; i++) {
+            for (int j = 0; j < weights_cols; j++) {
+                //依次改变每一个权值 来看看网络的loss情况
+                Matrix2d output_array;
+                weights_array[i][j] += epsilon;
+                Predict(sample, output_array);
+                double error_1 = Loss(output_array, label);
+                
+                weights_array[i][j] -= 2 * epsilon;
+                Predict(sample, output_array);
+                double error_2 = Loss(output_array, label);
+                
+                //期待的梯度 e2 - e1 / 2n
+                double expect_gradient = (error_2 - error_1) / (2.0 * epsilon);
+                //将当前改变的权重还原
+                weights_array[i][j] += epsilon;
+
+                LOG(INFO) << "weights{" << i << "}" << "{" << j << "}: "
+                          << ", expect - actural: "
+                          << expect_gradient << " - "
+                          << (fc_layer->get_weights_gradient_array())[i][j];
+            }
+        }
     }
 }
 
