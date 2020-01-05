@@ -31,9 +31,9 @@ class FullConnectedLayer;
 //神经网络类
 class NeuralNetwork {
 public:
-    //这里只用到float类型 设置一个类型别名
-    typedef std::vector<std::vector<float>> Matrix2d;
-    typedef std::vector<std::vector<std::vector<float>>> Matrix3d;
+    //这里只用到double类型 设置一个类型别名
+    typedef std::vector<std::vector<double>> Matrix2d;
+    typedef std::vector<std::vector<std::vector<double>>> Matrix3d;
 
     NeuralNetwork();
     ~NeuralNetwork();
@@ -46,23 +46,23 @@ public:
     void Initialize(const std::vector<size_t>& fc_layer_nodes_array);
     int Train(const Matrix3d& training_data_set, 
               const Matrix3d& labels,
-              int epoch, float learning_rate);
+              int epoch, double learning_rate);
     int Predict(const Matrix2d& input_array, 
                 Matrix2d& output_array);
     int CalcGradient(const Matrix2d& output_array, 
                      const Matrix2d& label);
-    void UpdateWeights(float learning_rate);
+    void UpdateWeights(double learning_rate);
     void Dump() const noexcept;
-    float Loss(const Matrix2d& output_array, 
+    double Loss(const Matrix2d& output_array, 
                const Matrix2d& label) const noexcept;
-    int GradientCheck(const Matrix2d& sample, 
-                      const Matrix2d& label);
+    void GradientCheck(const Matrix2d& sample, 
+                       const Matrix2d& label);
 
 protected:
     //内部函数
     int TrainOneSample(const Matrix2d& sample, 
                        const Matrix2d& label, 
-                       float learning_rate);
+                       double learning_rate);
 
 private:
     std::vector<std::shared_ptr<FullConnectedLayer>> fc_layers_array_;
