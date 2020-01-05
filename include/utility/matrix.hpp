@@ -39,7 +39,7 @@
 //模板类有一层命名空间  
 namespace calculate {
 
-template <typename DataType=float>
+template <typename DataType=double>
 struct Matrix {
 //类型别名
 typedef std::vector<DataType> Matrix1d;
@@ -47,9 +47,9 @@ typedef std::vector<std::vector<DataType>> Matrix2d;
 typedef std::vector<std::vector<std::vector<DataType>>> Matrix3d;
     
 // 矩阵相乘  dot product 点积
-static int MatrixMultiply(const Matrix2d& left_matrix, 
-                          const Matrix2d& right_matrix, 
-                          Matrix2d& result_matrix); 
+static int MatrixDotProduct(const Matrix2d& left_matrix, 
+                            const Matrix2d& right_matrix, 
+                            Matrix2d& result_matrix); 
 
 // 矩阵对应位置相乘 hadamark积 
 static int MatrixHadamarkProduct(const Matrix2d& left_matrix, 
@@ -105,10 +105,10 @@ static void ValueSubMatrix(DataType value,
                            Matrix2d& result_matrix);
 
 //计算2d矩阵的和
-static float Sum(const Matrix2d& source_matrix);
+static double Sum(const Matrix2d& source_matrix);
 
 //计算均方误差
-static float MeanSquareError(const Matrix2d& output_matrix, 
+static double MeanSquareError(const Matrix2d& output_matrix, 
                              const Matrix2d& label);
 
 };    //struct Matrix 
@@ -116,9 +116,9 @@ static float MeanSquareError(const Matrix2d& output_matrix,
 
 //矩阵相乘(dot product)点积
 template <class DataType>
-int Matrix<DataType>::MatrixMultiply(const Matrix2d& left_matrix, 
-                                     const Matrix2d& right_matrix, 
-                                     Matrix2d& result_matrix) {
+int Matrix<DataType>::MatrixDotProduct(const Matrix2d& left_matrix, 
+                                       const Matrix2d& right_matrix, 
+                                       Matrix2d& result_matrix) {
     int flag = 0;              //判断矩阵每行的列 是否都是一个值 
     int first_cols = -1;       //第一行的列数
     int current_cols = -1;     //本行的列数
@@ -175,10 +175,11 @@ int Matrix<DataType>::MatrixMultiply(const Matrix2d& left_matrix,
         return -1;
     }
     
-    //判断输出矩阵是否初始化过
-    if (0 == result_matrix.size()) {
-        result_matrix = Matrix2d(left_matrix_rows, Matrix1d(right_matrix_cols));
+    //判断输出矩阵是否初始化过 是的话要清零
+    if (0 != result_matrix.size()) {
+        result_matrix.clear();
     }
+    result_matrix = Matrix2d(left_matrix_rows, Matrix1d(right_matrix_cols));
 
     //开始点积运算  
     for (int i = 0; i < left_matrix_rows; i++) {
@@ -418,7 +419,7 @@ void Matrix<DataType>::MatrixShow(const Matrix2d& matrix) {
             }
 
             std::cout << std::showpoint << std::setiosflags(std::ios::fixed)
-                      << std::setprecision(6) << std::string(space_number, ' ')
+                      << std::setprecision(8) << std::string(space_number, ' ')
                       << matrix[i][j];
             
             if ((j + 1) == matrix[i].size()) {
@@ -535,8 +536,8 @@ void Matrix<DataType>::ValueSubMatrix(DataType value,
 
 //计算2d矩阵的和
 template <typename DataType>
-float Matrix<DataType>::Sum(const Matrix2d& source_matrix) {
-    float sum = 0.0;
+double Matrix<DataType>::Sum(const Matrix2d& source_matrix) {
+    double sum = 0.0;
     for (int i = 0; i < source_matrix.size(); i++) {
         for (int j = 0; j < source_matrix[i].size(); j++) {
             sum += source_matrix[i][j];
@@ -548,7 +549,7 @@ float Matrix<DataType>::Sum(const Matrix2d& source_matrix) {
 
 //均方误差 ((y - predict)**2.sum()) / 2 
 template <typename DataType>
-float Matrix<DataType>::MeanSquareError(const Matrix2d& output_matrix, 
+double Matrix<DataType>::MeanSquareError(const Matrix2d& output_matrix, 
                                         const Matrix2d& label) {
     if (output_matrix.size() != label.size()) {
         LOG(WARNING) << "计算均方误差失败, 矩阵的行数不相同...";
@@ -561,7 +562,7 @@ float Matrix<DataType>::MeanSquareError(const Matrix2d& output_matrix,
     }
 
     //计算均方误差
-    float sum = 0.0;
+    double sum = 0.0;
     for (int i = 0; i < output_matrix.size(); i++) {
         for (int j = 0; j < output_matrix[i].size(); j++) {
              sum += pow((label[i][j] - output_matrix[i][j]), 2);
@@ -577,7 +578,7 @@ float Matrix<DataType>::MeanSquareError(const Matrix2d& output_matrix,
 
 
 //模板类 随机数对象
-template <typename DataType=float>
+template <typename DataType=double>
 struct Random { 
 
 //类型别名
@@ -585,15 +586,48 @@ typedef std::vector<DataType> Matrix1d;
 typedef std::vector<std::vector<DataType>> Matrix2d;
 typedef std::vector<std::vector<std::vector<DataType>>> Matrix3d;
 
-//生成正态分布的随机数二维矩阵
+//生成服从正态分布的随机数二维矩阵
+static int Normal(float mean, float stddev, size_t rows, size_t cols, 
+                  Matrix2d& random_matrix);
+
+//生成随机的浮点数二维矩阵
 static int Uniform(float a, float b, size_t rows, size_t cols, 
                    Matrix2d& random_matrix);
 
 //生成随机的整数二维矩阵
-static int RandInt(int a, int b, size_t rows, size_t cols, 
+static int RandInt(float a, float b, size_t rows, size_t cols, 
                    Matrix2d& random_matrix);
 
+
 };   //struct Random
+
+//生成服从正态分布的随机数二维矩阵
+template <typename DataType>
+int Random<DataType>::Normal(float mean, float stddev, size_t rows, size_t cols, 
+                             Matrix2d& random_matrix) {
+    //判断输出矩阵是否初始化过
+    if (0 != random_matrix.size()) {
+        random_matrix.clear();
+    }
+
+    random_matrix.reserve(rows);
+    
+    std::random_device rand_device;
+    //static std::mt19937 gen(rand_device());
+    std::default_random_engine random_engine(rand_device());
+    std::normal_distribution<double> generate_random(mean, stddev);
+    for (int i = 0; i < rows; i++) {
+        std::vector<DataType> random_array;
+        random_array.reserve(cols);
+        for (int j = 0; j < cols; j++) {
+            random_array.push_back(generate_random(random_engine));
+        }
+        random_matrix.push_back(random_array);
+    }
+
+    return 0;
+}
+
 
 //生成一个 rows * cols的随机数矩阵 值的范围在a 到 b之间 
 template <typename DataType>
@@ -610,16 +644,16 @@ int Random<DataType>::Uniform(float a, float b, size_t rows, size_t cols,
     }
 
     random_matrix.reserve(rows);
-    float mean = a + ((b - a) / 2);   //均值
-    float stddev = (b - a) / 2;       //标准差
-
-    std::default_random_engine generate_engine;                      //生成引擎
-    std::normal_distribution<DataType> generate_random(mean, stddev);//标准正态分布 
+    
+    std::random_device rand_device;
+    //static std::mt19937 gen(rand_device());
+    std::default_random_engine random_engine(rand_device());
+    std::uniform_real_distribution<double> generate_random(a, b);
     for (int i = 0; i < rows; i++) {
         std::vector<DataType> random_array;
         random_array.reserve(cols);
         for (int j = 0; j < cols; j++) {
-            random_array.push_back(generate_random(generate_engine));
+            random_array.push_back(generate_random(random_engine));
         }
         random_matrix.push_back(random_array);
     }
@@ -629,30 +663,31 @@ int Random<DataType>::Uniform(float a, float b, size_t rows, size_t cols,
 
 //生成一个随机整数二维矩阵
 template <typename DataType>
-int Random<DataType>::RandInt(int a, int b, size_t rows, size_t cols,  
+int Random<DataType>::RandInt(float a, float b, size_t rows, size_t cols,  
                               Matrix2d& random_matrix) {
     if (b < a) {
         LOG(WARNING) << "随机数生成错误 下限大于上限";
         return -1;
     }
-
-    if (0 == random_matrix.size()) {
-        Matrix<DataType>::CreateZerosMatrix(rows, cols, random_matrix);
+    
+    //判断输出矩阵是否初始化过
+    if (0 != random_matrix.size()) {
+        random_matrix.clear();
     }
 
-    DataType random_value = 0;
-    //用time函数的返回值 来做seed种子
+    random_matrix.reserve(rows);
+    
+    std::random_device rand_device;
+    //static std::mt19937 gen(rand_device());
+    std::default_random_engine random_engine(rand_device());
+    std::uniform_int_distribution<int> generate_random(a, b);
     for (int i = 0; i < rows; i++) {
+        std::vector<DataType> random_array;
+        random_array.reserve(cols);
         for (int j = 0; j < cols; j++) {
-            srand((unsigned int)time(NULL) + i * cols + j * 100000);
-            if (a >= 0) {
-                random_value = rand() % b + a;
-                random_value > b ? b : random_value;
-            } else {
-                random_value = rand() % (b - a) + a;
-            }
-            random_matrix[i][j] = random_value;
+            random_array.push_back(generate_random(random_engine));
         }
+        random_matrix.push_back(random_array);
     }
 
     return 0;
@@ -661,7 +696,7 @@ int Random<DataType>::RandInt(int a, int b, size_t rows, size_t cols,
 }         //namespace calculate
 
 //定义别名
-typedef calculate::Matrix<float> Matrix;
-typedef calculate::Random<float> Random;
+typedef calculate::Matrix<double> Matrix;
+typedef calculate::Random<double> Random;
 
 #endif    //CALCULATE_MATRIX_HPP_
