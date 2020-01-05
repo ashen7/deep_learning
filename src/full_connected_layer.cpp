@@ -37,6 +37,10 @@ FullConnectedLayer::FullConnectedLayer() {
 FullConnectedLayer::~FullConnectedLayer() {
 }
 
+/*
+ * 初始化全连接层
+ * 初始化权重数组 偏置数组为一个很小的值
+ */
 void FullConnectedLayer::Initialize(size_t input_node_size, 
                                     size_t output_node_size) {
     input_node_size_ = input_node_size;
@@ -47,9 +51,6 @@ void FullConnectedLayer::Initialize(size_t input_node_size,
     Random::Uniform(-0.1, 0.1, output_node_size, input_node_size, weights_array_);
     Matrix::CreateZerosMatrix(output_node_size, 1, biases_array_);
     Matrix::CreateZerosMatrix(output_node_size, 1, output_array_);
-    
-    LOG(INFO) << "初始化权重数组:";
-    Matrix::MatrixShow(weights_array_);
 }
 
 /*
@@ -61,11 +62,11 @@ int FullConnectedLayer::Forward(const Matrix2d& input_array) {
     input_array_ = input_array;
 
     //矩阵相乘  w .* x 得到输出数组
-    if (0 != Matrix::MatrixMultiply(weights_array_, input_array, output_array_)) {
+    if (-1 == Matrix::MatrixDotProduct(weights_array_, input_array, output_array_)) {
         return -1;
     }
     //矩阵相加 w .* x + b
-    if (0 != Matrix::MatrixAdd(output_array_, biases_array_, output_array_)) {
+    if (-1 == Matrix::MatrixAdd(output_array_, biases_array_, output_array_)) {
         return -1;
     }
     
@@ -87,7 +88,7 @@ int FullConnectedLayer::Forward(const Matrix2d& input_array) {
  * b偏置的梯度 就是 delta_array
  */
 int FullConnectedLayer::Backward(const Matrix2d& output_delta_array) {
-    std::vector<std::vector<float>> temp_array1;
+    Matrix2d temp_array1;
     if (backward_activator_callback_) {
         // 计算x * (1 - x)
         backward_activator_callback_(input_array_, temp_array1);
@@ -97,30 +98,29 @@ int FullConnectedLayer::Backward(const Matrix2d& output_delta_array) {
     }
 
     //计算w的转置矩阵 WT 
-    std::vector<std::vector<float>> weights_transpose_array;
-    if (0 != Matrix::TransposeMatrix(weights_array_, weights_transpose_array)) {
+    Matrix2d weights_transpose_array;
+    if (-1 == Matrix::TransposeMatrix(weights_array_, weights_transpose_array)) {
         return -1;
     }
     
-    std::vector<std::vector<float>> temp_array2;
+    Matrix2d temp_array2;
     //计算WT .* delta_array
-    if (0 != Matrix::MatrixMultiply(weights_transpose_array, output_delta_array, temp_array2)) {
+    if (-1 == Matrix::MatrixDotProduct(weights_transpose_array, output_delta_array, temp_array2)) {
         return -1;
     }
 
-
     //计算x * (1 - x) * WT .* delta_array 得到本层的delta_array
-    if (0 != Matrix::MatrixHadamarkProduct(temp_array1, temp_array2, delta_array_)) {
+    if (-1 == Matrix::MatrixHadamarkProduct(temp_array1, temp_array2, delta_array_)) {
         return -1;
     }
     
     //利用上一层的误差项delta_array 计算weights的梯度 delta_array .* xT
-    std::vector<std::vector<float>> input_transpose_array;
-    if (0 != Matrix::TransposeMatrix(input_array_, input_transpose_array)) {
+    Matrix2d input_transpose_array;
+    if (-1 == Matrix::TransposeMatrix(input_array_, input_transpose_array)) {
         return -1;
     }
     
-    if (0 != Matrix::MatrixMultiply(output_delta_array, input_transpose_array, weights_gradient_array_)) {
+    if (-1 == Matrix::MatrixDotProduct(output_delta_array, input_transpose_array, weights_gradient_array_)) {
         return -1;
     }
 
@@ -135,21 +135,23 @@ int FullConnectedLayer::Backward(const Matrix2d& output_delta_array) {
  * w = w + learning_rate * w_gradient
  * b = b + learning_rate * b_gradient
  */
-void FullConnectedLayer::UpdateWeights(float learning_rate) {
+void FullConnectedLayer::UpdateWeights(double learning_rate) {
     //权重的变化数组 
-    std::vector<std::vector<float>> weights_delta_array;
+    Matrix2d weights_delta_array;
     Matrix::ValueMulMatrix(learning_rate, weights_gradient_array_, weights_delta_array);
     Matrix::MatrixAdd(weights_array_, weights_delta_array, weights_array_);
 
     //偏置的变化数组
-    std::vector<std::vector<float>> biases_delta_array;
+    Matrix2d biases_delta_array;
     Matrix::ValueMulMatrix(learning_rate, biases_gradient_array_, biases_delta_array);
     Matrix::MatrixAdd(biases_array_, biases_delta_array, biases_array_);
 }
 
 void FullConnectedLayer::Dump() const noexcept {
-    LOG(WARNING) << "权重数组:";
+    LOG(INFO) << "权重数组:";
     Matrix::MatrixShow(weights_array_); 
+    LOG(INFO) << "偏置数组:";
+    Matrix::MatrixShow(biases_array_);
 }
 
 }       //namespace dnn
