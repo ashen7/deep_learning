@@ -1,4 +1,4 @@
 #client gflags configure file
 -learning_rate=0.3
--batch_size=20
--epoch=5
+-batch_size=40
+-epoch=20
