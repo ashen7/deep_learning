@@ -82,6 +82,9 @@ static int MatrixReshape(const Matrix1d& source_matrix,
 // 打印二维矩阵
 static void MatrixShow(const Matrix2d& matrix);
 
+// 打印图像二维矩阵
+static void ImageMatrixShow(const Matrix2d& matrix);
+
 // 创建2维矩阵 初始值为0
 static void CreateZerosMatrix(size_t rows, size_t cols, 
                               Matrix2d& matrix);
@@ -289,6 +292,7 @@ int Matrix<DataType>::MatrixSubtract(const Matrix2d& sub_matrix,
     return 0;
 }
 
+//得到矩阵的形状
 template <typename DataType>
 std::tuple<size_t, size_t> Matrix<DataType>::GetMatrixShape(const Matrix2d& source_matrix) {
     if (0 == source_matrix.size()) {
@@ -421,6 +425,31 @@ void Matrix<DataType>::MatrixShow(const Matrix2d& matrix) {
             std::cout << std::showpoint << std::setiosflags(std::ios::fixed)
                       << std::setprecision(8) << std::string(space_number, ' ')
                       << matrix[i][j];
+            
+            if ((j + 1) == matrix[i].size()) {
+                std::cout << "  ]" << std::endl;
+            }
+        }
+    }
+    std::cout << std::endl;
+}
+
+// 打印图像二维矩阵
+template <typename DataType>
+void Matrix<DataType>::ImageMatrixShow(const Matrix2d& matrix) {
+    if (0 == matrix.size()) {
+        LOG(WARNING) << "矩阵为空...";
+        return ;
+    }
+
+    for (int i = 0; i < matrix.size(); i++) {
+        for (int j = 0; j < matrix[i].size(); j++) {
+            if (0 == j) {
+                std::cout << "  [";
+            }
+
+            std::cout << std::setw(3) << std::setiosflags(std::ios::right)
+                      << int(matrix[i][j]) << " ";
             
             if ((j + 1) == matrix[i].size()) {
                 std::cout << "  ]" << std::endl;
@@ -698,5 +727,9 @@ int Random<DataType>::RandInt(float a, float b, size_t rows, size_t cols,
 //定义别名
 typedef calculate::Matrix<double> Matrix;
 typedef calculate::Random<double> Random;
+
+//图像矩阵
+typedef calculate::Matrix<uint8_t> ImageMatrix;
+
 
 #endif    //CALCULATE_MATRIX_HPP_
