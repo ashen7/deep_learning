@@ -40,6 +40,11 @@ public:
 public:
     //位运算 输入为0-255的值 8位二进制从低位到高位 位是1就是0.9 位是0就是0.1 输出一个8维列表
     static void Normalize(uint8_t number, std::vector<std::vector<double>>&);
+
+    //这个是对外提供的接口 
+    static void Normalize(uint8_t number, size_t rows, size_t cols, 
+                          std::vector<std::vector<double>>&);
+
     //输入为模型预测的输出值 二值化然后把值还原成最初的number 如果相等 则表明每位的预测偏差没有很大
     static uint8_t Denormalize(const std::vector<std::vector<double>>& model_predict_output);
 
@@ -65,6 +70,22 @@ void Normalizer::Normalize(uint8_t number,
     }
 
     Matrix::MatrixReshape(data, 8, 1, result_matrix);
+}
+
+void Normalizer::Normalize(uint8_t number, size_t rows, size_t cols, 
+                           std::vector<std::vector<double>>& label) {
+    std::vector<double> data;
+    data.reserve(rows * cols);
+    for (int i = 0; i < rows * cols; i++) {
+        //如果值等于结果值 那个地方就是0.9 否则就是0.1
+        if (number == i) {
+            data.push_back(0.9);
+        } else {
+            data.push_back(0.1);
+        }
+    }
+    
+    Matrix::MatrixReshape(data, rows, cols, label);
 }
 
 uint8_t Normalizer::Denormalize(const std::vector<std::vector<double>>& model_predict_output) {

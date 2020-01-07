@@ -1,0 +1,5 @@
+#client gflags configure file
+-learning_rate=0.1
+-epoch=0
+-mnist_training_data_szie=2000
+-mnist_test_data_szie=100

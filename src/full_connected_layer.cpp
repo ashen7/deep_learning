@@ -59,8 +59,36 @@ void FullConnectedLayer::Initialize(size_t input_node_size,
  */  
 int FullConnectedLayer::Forward(const Matrix2d& input_array) {
     //得到本层输入矩阵 也就是本层的节点值
-    input_array_ = input_array;
+    hidden_input_array_ = input_array;
 
+    //矩阵相乘  w .* x 得到输出数组
+    if (-1 == Matrix::MatrixDotProduct(weights_array_, input_array, output_array_)) {
+        return -1;
+    }
+    //矩阵相加 w .* x + b
+    if (-1 == Matrix::MatrixAdd(output_array_, biases_array_, output_array_)) {
+        return -1;
+    }
+    
+    //激活函数 得到本层输出数组 f(w .* x + b)
+    if (forward_activator_callback_) {
+        forward_activator_callback_(output_array_, output_array_);
+    } else {
+        LOG(WARNING) << "前向传播激活函数为空...";
+        return -1;
+    }
+
+    return 0;
+}
+
+/*
+ * 前向计算 a = f(w .* x + b)  输出等于激活函数(权重数组 点积 输入数组 最后数组和偏置数组相加)
+ * 下一层前向计算的输入数组 就是上一层的输出数组
+ */  
+int FullConnectedLayer::Forward(const ImageMatrix2d& input_array) {
+    //得到本层输入矩阵 也就是本层的节点值
+    input_array_ = input_array;
+    
     //矩阵相乘  w .* x 得到输出数组
     if (-1 == Matrix::MatrixDotProduct(weights_array_, input_array, output_array_)) {
         return -1;
@@ -91,7 +119,12 @@ int FullConnectedLayer::Backward(const Matrix2d& output_delta_array) {
     Matrix2d temp_array1;
     if (backward_activator_callback_) {
         // 计算x * (1 - x)
-        backward_activator_callback_(input_array_, temp_array1);
+        //判断一下是隐藏层还是输入层
+        if (is_input_layer_) {
+            ImageActivator::SigmoidBackward(input_array_, temp_array1);
+        } else {
+            backward_activator_callback_(hidden_input_array_, temp_array1);
+        }
     } else {
         LOG(WARNING) << "反向传播激活函数为空...";
         return -1;
@@ -115,14 +148,27 @@ int FullConnectedLayer::Backward(const Matrix2d& output_delta_array) {
     }
     
     //利用上一层的误差项delta_array 计算weights的梯度 delta_array .* xT
-    Matrix2d input_transpose_array;
-    if (-1 == Matrix::TransposeMatrix(input_array_, input_transpose_array)) {
-        return -1;
+    //这里做下判断 因为输入矩阵有可能是uint8_t类型的
+    if (is_input_layer_) {
+        ImageMatrix2d input_transpose_array;
+
+        if (-1 == ImageMatrix::TransposeMatrix(input_array_, input_transpose_array)) {
+            return -1;
+        }
+        if (-1 == Matrix::MatrixDotProduct(output_delta_array, input_transpose_array, weights_gradient_array_)) {
+            return -1;
+        }
+    } else {
+        Matrix2d _input_transpose_array;
+        
+        if (-1 == Matrix::TransposeMatrix(hidden_input_array_, _input_transpose_array)) {
+            return -1;
+        }
+        if (-1 == Matrix::MatrixDotProduct(output_delta_array, _input_transpose_array, weights_gradient_array_)) {
+            return -1;
+        }
     }
     
-    if (-1 == Matrix::MatrixDotProduct(output_delta_array, input_transpose_array, weights_gradient_array_)) {
-        return -1;
-    }
 
     //利用上一层的误差项delta_array 计算biases的梯度 delta_array
     biases_gradient_array_ = output_delta_array;

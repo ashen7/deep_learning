@@ -34,6 +34,8 @@ public:
     //这里只用到double类型 设置一个类型别名
     typedef std::vector<std::vector<double>> Matrix2d;
     typedef std::vector<std::vector<std::vector<double>>> Matrix3d;
+    typedef std::vector<std::vector<uint8_t>> ImageMatrix2d;
+    typedef std::vector<std::vector<std::vector<uint8_t>>> ImageMatrix3d;
 
     NeuralNetwork();
     ~NeuralNetwork();
@@ -47,7 +49,12 @@ public:
     int Train(const Matrix3d& training_data_set, 
               const Matrix3d& labels,
               int epoch, double learning_rate);
+    int Train(const ImageMatrix3d& training_data_set, 
+              const Matrix3d& labels,
+              int epoch, double learning_rate);
     int Predict(const Matrix2d& input_array, 
+                Matrix2d& output_array);
+    int Predict(const ImageMatrix2d& input_array, 
                 Matrix2d& output_array);
     int CalcGradient(const Matrix2d& output_array, 
                      const Matrix2d& label);
@@ -57,10 +64,15 @@ public:
                const Matrix2d& label) const noexcept;
     void GradientCheck(const Matrix2d& sample, 
                        const Matrix2d& label);
+    void GradientCheck(const ImageMatrix2d& sample, 
+                       const Matrix2d& label);
 
 protected:
     //内部函数
     int TrainOneSample(const Matrix2d& sample, 
+                       const Matrix2d& label, 
+                       double learning_rate);
+    int TrainOneSample(const ImageMatrix2d& sample, 
                        const Matrix2d& label, 
                        double learning_rate);
 
