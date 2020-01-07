@@ -114,7 +114,7 @@ def evaluate(neural_network, test_data_set, test_labels):
         predict = get_result(neural_network.predict(test_data_set[i]))
         if label != predict:
             error += 1
-        return error / total
+    return error / total
 
 # 训练策略 每训练10轮  评估一次准确率  当准确率开始下降时终止训练
 def train_and_evaluate(neural_network, training_data_count, test_data_count):
@@ -133,7 +133,7 @@ def train_and_evaluate(neural_network, training_data_count, test_data_count):
         print('{} epoch {} finished, loss: {}'.format(now, epoch, neural_network.loss(
                                 neural_network.predict(test_data_set[8]), test_labels[8])
                                                       ))
-        if epoch % 10 == 0:
+        if epoch % 5 == 0:
             error_ratio = evaluate(neural_network, test_data_set, test_labels)
             now = datetime.now()
             now = now.strftime('%Y-%m-%d %H:%M:%S')
