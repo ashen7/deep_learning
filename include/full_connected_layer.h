@@ -29,6 +29,8 @@ class FullConnectedLayer {
 public:
     typedef std::vector<std::vector<double>> Matrix2d;
     typedef std::vector<std::vector<std::vector<double>>> Matrix3d;
+    typedef std::vector<std::vector<uint8_t>> ImageMatrix2d;
+    typedef std::vector<std::vector<std::vector<uint8_t>>> ImageMatrix3d;
     typedef std::function<void(const Matrix2d&, Matrix2d&)> SigmoidActivatorCallback;
 
     FullConnectedLayer();
@@ -38,6 +40,14 @@ public:
     FullConnectedLayer(FullConnectedLayer&&) = default;
     FullConnectedLayer& operator =(FullConnectedLayer&&) = default;
     
+    void set_is_input_layer(bool is_input_layer) {
+        is_input_layer_ = is_input_layer;
+    }
+    
+    const bool get_is_input_layer() const noexcept {
+        return is_input_layer_;
+    }
+
     //梯度检查时 要小小的改变一下权重 来查看梯度的浮动变化
     Matrix2d& get_weights_array() noexcept {
         return weights_array_;
@@ -75,6 +85,7 @@ public:
 public:
     void Initialize(size_t input_node_size, size_t output_node_size); 
     int Forward(const Matrix2d& input_array);
+    int Forward(const ImageMatrix2d& input_array);
     int Backward(const Matrix2d& output_delta_array);
     void UpdateWeights(double learning_rate);
     void Dump() const noexcept;
@@ -84,11 +95,13 @@ protected:
     static SigmoidActivatorCallback backward_activator_callback_; //激活函数的反向计算 
 
 private:
+    bool is_input_layer_;             //是否是输入层
     size_t input_node_size_;          //输入节点
     size_t output_node_size_;         //输出节点
     Matrix2d weights_array_;          //权重数组
     Matrix2d biases_array_;           //偏执数组
-    Matrix2d input_array_;            //输入数组
+    Matrix2d hidden_input_array_;     //隐藏层的输入数组
+    ImageMatrix2d input_array_;       //输入数组
     Matrix2d output_array_;           //输出数组
     Matrix2d delta_array_;            //误差数组
     Matrix2d weights_gradient_array_; //权重梯度数组
