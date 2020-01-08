@@ -36,6 +36,9 @@
 #include <chrono>
 
 #include <glog/logging.h>
+#include <omp.h>
+
+#define OPENMP_THREADS_NUMBER 6   //openmp并行线程数量
 
 //模板类 
 //模板类有一层命名空间  
@@ -201,11 +204,15 @@ int Matrix<DataType>::MatrixDotProduct(const Matrix2d& left_matrix,
     }
     result_matrix = Matrix2d(left_matrix_rows, Matrix1d(right_matrix_cols));
 
-    //开始点积运算  
-    for (int i = 0; i < left_matrix_rows; i++) {
-        for (int j = 0; j < right_matrix_cols; j++) {
-            for (int k = 0; k < left_matrix_cols; k++) {
-                result_matrix[i][j] += left_matrix[i][k] * right_matrix[k][j];
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //开始点积运算  
+        for (int i = 0; i < left_matrix_rows; i++) {
+            for (int j = 0; j < right_matrix_cols; j++) {
+                for (int k = 0; k < left_matrix_cols; k++) {
+                    result_matrix[i][j] += left_matrix[i][k] * right_matrix[k][j];
+                }
             }
         }
     }
@@ -271,11 +278,15 @@ int Matrix<DataType>::MatrixDotProduct(const std::vector<std::vector<double>>& l
     }
     result_matrix = Matrix2d(left_matrix_rows, Matrix1d(right_matrix_cols));
 
-    //开始点积运算  
-    for (int i = 0; i < left_matrix_rows; i++) {
-        for (int j = 0; j < right_matrix_cols; j++) {
-            for (int k = 0; k < left_matrix_cols; k++) {
-                result_matrix[i][j] += left_matrix[i][k] * right_matrix[k][j];
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //开始点积运算  
+        for (int i = 0; i < left_matrix_rows; i++) {
+            for (int j = 0; j < right_matrix_cols; j++) {
+                for (int k = 0; k < left_matrix_cols; k++) {
+                    result_matrix[i][j] += left_matrix[i][k] * right_matrix[k][j];
+                }
             }
         }
     }
@@ -319,9 +330,14 @@ int Matrix<DataType>::MatrixHadamarkProduct(const Matrix2d& left_matrix,
         }
     }
 
-    for (int i = 0; i < left_matrix.size(); i++) {
-        for (int j = 0; j < left_matrix[i].size(); j++) {
-            result_matrix[i][j] = left_matrix[i][j] * right_matrix[i][j];
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //开始乘积运算
+        for (int i = 0; i < left_matrix.size(); i++) {
+            for (int j = 0; j < left_matrix[i].size(); j++) {
+                result_matrix[i][j] = left_matrix[i][j] * right_matrix[i][j];
+            }
         }
     }
 
@@ -366,10 +382,14 @@ int Matrix<DataType>::MatrixAdd(const Matrix2d& add_matrix,
         }
     }
         
-    //矩阵相加
-    for (int i = 0; i < add_matrix.size(); i++) {
-        for (int j = 0; j < add_matrix[i].size(); j++) {
-            result_matrix[i][j] = add_matrix[i][j] + beadd_matrix[i][j];
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //矩阵相加
+        for (int i = 0; i < add_matrix.size(); i++) {
+            for (int j = 0; j < add_matrix[i].size(); j++) {
+                result_matrix[i][j] = add_matrix[i][j] + beadd_matrix[i][j];
+            }
         }
     }
 
@@ -414,10 +434,14 @@ int Matrix<DataType>::MatrixSubtract(const Matrix2d& sub_matrix,
         }
     }
         
-    //矩阵相减
-    for (int i = 0; i < sub_matrix.size(); i++) {
-        for (int j = 0; j < sub_matrix[i].size(); j++) {
-            result_matrix[i][j] = sub_matrix[i][j] - besub_matrix[i][j];
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //矩阵相减
+        for (int i = 0; i < sub_matrix.size(); i++) {
+            for (int j = 0; j < sub_matrix[i].size(); j++) {
+                result_matrix[i][j] = sub_matrix[i][j] - besub_matrix[i][j];
+            }
         }
     }
 
@@ -479,7 +503,6 @@ int Matrix<DataType>::MatrixReshape(const Matrix2d& source_matrix,
         }
     }
     
-    index = 0;
     //再赋值给新数组  判断一下输出矩阵有没有初始化
     if (0 == result_matrix.size()) {
         result_matrix.reserve(rows);
@@ -506,11 +529,13 @@ int Matrix<DataType>::MatrixReshape(const Matrix2d& source_matrix,
                 }
             }
         }
+    }
 
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                result_matrix[i][j] = matrix_data[index++];    
-            }
+    index = 0;
+    //reshape
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            result_matrix[i][j] = matrix_data[index++];    
         }
     }
 
@@ -654,15 +679,7 @@ int Matrix<DataType>::CreateZerosMatrix(size_t rows, size_t cols,
         matrix.clear();
     }
     
-    matrix.reserve(rows);
-
-    for (int i = 0; i < rows; i++) {
-        Matrix1d cols_array(cols);
-        for (int j = 0; j < cols; j++) {
-            cols_array[j] = 0;
-        }
-        matrix.push_back(cols_array);
-    }
+    matrix = Matrix2d(rows, Matrix1d(cols, 0));
 }
 
 //创建0矩阵
@@ -685,15 +702,7 @@ int Matrix<DataType>::CreateZerosMatrix(const std::tuple<size_t, size_t>& shape,
         matrix.clear();
     }
     
-    matrix.reserve(rows);
-
-    for (int i = 0; i < rows; i++) {
-        Matrix1d cols_array(cols);
-        for (int j = 0; j < cols; j++) {
-            cols_array[j] = 0;
-        }
-        matrix.push_back(cols_array);
-    }
+    matrix = Matrix2d(rows, Matrix1d(cols, 0));
 }
 
 //创建1矩阵
@@ -713,15 +722,7 @@ int Matrix<DataType>::CreateOnesMatrix(size_t rows, size_t cols,
         matrix.clear();
     }
 
-    matrix.reserve(rows);
-
-    for (int i = 0; i < rows; i++) {
-        Matrix1d cols_array(cols);
-        for (int j = 0; j < cols; j++) {
-            cols_array[j] = 1;
-        }
-        matrix.push_back(cols_array);
-    }
+    matrix = Matrix2d(rows, Matrix1d(cols, 1));
 }
 
 //创建1矩阵
@@ -744,15 +745,7 @@ int Matrix<DataType>::CreateOnesMatrix(const std::tuple<size_t, size_t>& shape,
         matrix.clear();
     }
 
-    matrix.reserve(rows);
-
-    for (int i = 0; i < rows; i++) {
-        Matrix1d cols_array(cols);
-        for (int j = 0; j < cols; j++) {
-            cols_array[j] = 1;
-        }
-        matrix.push_back(cols_array);
-    }
+    matrix = Matrix2d(rows, Matrix1d(cols, 1));
 }
 
 //转置矩阵
@@ -793,9 +786,14 @@ int Matrix<DataType>::TransposeMatrix(const Matrix2d& source_matrix,
         }
     }
 
-    for (int i = 0; i < source_matrix.size(); i++) {
-        for (int j = 0; j < source_matrix[i].size(); j++) {
-            result_matrix[j][i] = source_matrix[i][j];
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //转置矩阵
+        for (int i = 0; i < source_matrix.size(); i++) {
+            for (int j = 0; j < source_matrix[i].size(); j++) {
+                result_matrix[j][i] = source_matrix[i][j];
+            }
         }
     }
 
@@ -825,9 +823,13 @@ void Matrix<DataType>::ValueMulMatrix(DataType value,
         }
     }
 
-    for (int i = 0; i < source_matrix.size(); i++) {
-        for (int j = 0; j < source_matrix[i].size(); j++) {
-            result_matrix[i][j] = source_matrix[i][j] * value;
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        for (int i = 0; i < source_matrix.size(); i++) {
+            for (int j = 0; j < source_matrix[i].size(); j++) {
+                result_matrix[i][j] = source_matrix[i][j] * value;
+            }
         }
     }
 }
@@ -855,9 +857,13 @@ void Matrix<DataType>::ValueSubMatrix(DataType value,
         }
     }
 
-    for (int i = 0; i < source_matrix.size(); i++) {
-        for (int j = 0; j < source_matrix[i].size(); j++) {
-            result_matrix[i][j] = value - source_matrix[i][j];
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        for (int i = 0; i < source_matrix.size(); i++) {
+            for (int j = 0; j < source_matrix[i].size(); j++) {
+                result_matrix[i][j] = value - source_matrix[i][j];
+            }
         }
     }
 }
@@ -866,9 +872,15 @@ void Matrix<DataType>::ValueSubMatrix(DataType value,
 template <typename DataType>
 double Matrix<DataType>::Sum(const Matrix2d& source_matrix) {
     double sum = 0.0;
-    for (int i = 0; i < source_matrix.size(); i++) {
-        for (int j = 0; j < source_matrix[i].size(); j++) {
-            sum += source_matrix[i][j];
+
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) reduction(+ : sum) 
+        //多线程数据竞争  加锁保护
+        for (int i = 0; i < source_matrix.size(); i++) {
+            for (int j = 0; j < source_matrix[i].size(); j++) {
+                sum += source_matrix[i][j];
+            }
         }
     }
 
@@ -893,9 +905,14 @@ double Matrix<DataType>::MeanSquareError(const Matrix2d& output_matrix,
 
     //计算均方误差
     double sum = 0.0;
-    for (int i = 0; i < output_matrix.size(); i++) {
-        for (int j = 0; j < output_matrix[i].size(); j++) {
-             sum += pow((label[i][j] - output_matrix[i][j]), 2);
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) reduction(+ : sum)
+        //多线程数据竞争  加锁保护
+        for (int i = 0; i < output_matrix.size(); i++) {
+            for (int j = 0; j < output_matrix[i].size(); j++) {
+                 sum += pow((label[i][j] - output_matrix[i][j]), 2);
+            }
         }
     }
 
@@ -1093,11 +1110,15 @@ void Activator<DataType>::SigmoidForward(const Matrix2d& input_array,
         output_array = input_array;
     }
 
-    //计算 1 / (1 + exp(-input_array))
-    for (int i = 0; i < input_array.size(); i++) {
-        for (int j = 0; j < input_array[i].size(); j++) {
-            //exp返回e的x次方 得到0. 1. 2.值 加上1都大于1了 然后用1除  最后都小于1
-            output_array[i][j] = 1.0 / (1.0 + exp(-input_array[i][j])); 
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //计算 1 / (1 + exp(-input_array))
+        for (int i = 0; i < input_array.size(); i++) {
+            for (int j = 0; j < input_array[i].size(); j++) {
+                //exp返回e的x次方 得到0. 1. 2.值 加上1都大于1了 然后用1除  最后都小于1
+                output_array[i][j] = 1.0 / (1.0 + exp(-input_array[i][j])); 
+            }
         }
     }
 }
@@ -1111,10 +1132,14 @@ void Activator<DataType>::SigmoidBackward(const Matrix2d& output_array,
         delta_array = output_array;
     }
 
-    //计算 output(1 - output)
-    for (int i = 0; i < output_array.size(); i++) {
-        for (int j = 0; j < output_array[i].size(); j++) {
-            delta_array[i][j] = output_array[i][j] * (1.0 - output_array[i][j]);
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //计算 output(1 - output)
+        for (int i = 0; i < output_array.size(); i++) {
+            for (int j = 0; j < output_array[i].size(); j++) {
+                delta_array[i][j] = output_array[i][j] * (1.0 - output_array[i][j]);
+            }
         }
     }
 }
@@ -1129,10 +1154,14 @@ void Activator<DataType>::SigmoidBackward(const ImageMatrix2d& output_array,
         matrix::Matrix<double>::CreateZerosMatrix(shape, delta_array);
     }
 
-    //计算 output(1 - output)
-    for (int i = 0; i < output_array.size(); i++) {
-        for (int j = 0; j < output_array[i].size(); j++) {
-            delta_array[i][j] = output_array[i][j] * (1.0 - output_array[i][j]);
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        //计算 output(1 - output)
+        for (int i = 0; i < output_array.size(); i++) {
+            for (int j = 0; j < output_array[i].size(); j++) {
+                delta_array[i][j] = output_array[i][j] * (1.0 - output_array[i][j]);
+            }
         }
     }
 }
