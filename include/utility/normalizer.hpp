@@ -23,7 +23,7 @@
 
 #include <vector>
 
-#include "matrix.hpp"
+#include "matrix_math_function.hpp"
 
 namespace utility {
 //归一化
