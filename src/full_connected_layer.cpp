@@ -23,7 +23,7 @@
 
 #include <glog/logging.h>
 
-#include "utility/matrix.hpp"
+#include "utility/matrix_math_function.hpp"
 
 namespace dnn {
 
