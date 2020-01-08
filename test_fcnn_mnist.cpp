@@ -38,7 +38,7 @@
 #include "neural_network.h"
 #include "full_connected_layer.h"
 #include "utility/normalizer.hpp"
-#include "utility/matrix.hpp"
+#include "utility/matrix_math_function.hpp"
 
 //gfalgs 
 DEFINE_double(learning_rate, 0.1, "AI model train learning rate");
