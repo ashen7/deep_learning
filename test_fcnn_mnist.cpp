@@ -328,19 +328,18 @@ int TrainAndEvaluate(std::string mnist_path) {
                   << " finished, loss: " << loss;
         
         //每训练10轮 测试一次
-        if (0 == FLAGS_epoch % 10) {
+        if (0 == FLAGS_epoch % 5) {
             double current_error_ratio = Evaluate(mnist_test_sample_data_set, 
                                                   mnist_test_label_data_set);
             char _now[60] = { 0 };
             calculate::time::GetCurrentTime(_now);
             LOG(WARNING) << _now << " after epoch " << FLAGS_epoch
                          << ", error ratio is: %" << current_error_ratio * 100;
-
-            if (current_error_ratio > last_error_ratio) {
-                break;
-            } else {
-                last_error_ratio = current_error_ratio;
-            }
+            //if (current_error_ratio > last_error_ratio) {
+            //    break;
+            //} else {
+            //    last_error_ratio = current_error_ratio;
+            //}
         }
     }
 
@@ -361,6 +360,7 @@ double Evaluate(std::vector<std::vector<std::vector<uint8_t>>>& mnist_test_sampl
         SingletonNeuralNetwork::Instance().Predict(mnist_test_sample_data_set[i], 
                                                    output_array);
         output = GetPredictResult(output_array);
+        //LOG(INFO) << "预测值: " << output << ", 标签: " << label;
         if (label != output) {
             error += 1.0;
         }
@@ -381,6 +381,27 @@ int Train(std::string mnist_path) {
         return -1;
     }
     
+    while (true) {
+        FLAGS_epoch++;
+        //每次训练完成1轮后 打印一下当前情况
+        SingletonNeuralNetwork::Instance().Train(mnist_training_sample_data_set, 
+                                                 mnist_training_label_data_set, 
+                                                 1, 
+                                                 FLAGS_learning_rate);
+        //得到当前时间
+        char now[60] = { 0 };
+        calculate::time::GetCurrentTime(now);
+        //拿一个样本和标签 算loss
+        std::vector<std::vector<double>> output_array;
+        SingletonNeuralNetwork::Instance().Predict(mnist_training_sample_data_set[8], 
+                                                   output_array);
+        double loss = SingletonNeuralNetwork::Instance().Loss(output_array, 
+                                                              mnist_training_label_data_set[8]);
+        LOG(INFO) << now << " epoch " << FLAGS_epoch
+                  << " finished, loss: " << loss;
+    }
+    
+    return 0;
 }
 
 //测试模型   用错误率来对网络进行评估
@@ -394,7 +415,30 @@ int Test(std::string mnist_path) {
         LOG(ERROR) << "get mnist traing data set failed...";
         return -1;
     }
+
+    double error = 0.0;
+    size_t test_data_set_total = mnist_test_sample_data_set.size();
+    int label = -1;
+    int output = -1;
+    std::vector<std::vector<double>> output_array;
+    //遍历测试数据集 做预测 查看结果 
+    for (int i = 0; i < test_data_set_total; i++) {
+        label = GetPredictResult(mnist_test_label_data_set[i]);
+        SingletonNeuralNetwork::Instance().Predict(mnist_test_sample_data_set[i], 
+                                                   output_array);
+        output = GetPredictResult(output_array);
+        if (label != output) {
+            error += 1.0;
+        }
+    }
     
+    double error_ratio = error / test_data_set_total;
+    char now[60] = { 0 };
+    calculate::time::GetCurrentTime(now);
+    LOG(WARNING) << now << " after epoch " << FLAGS_epoch
+                 << ", error ratio is: %" << error_ratio * 100;
+
+    return 0;
 }
 
 
@@ -410,7 +454,7 @@ int GetPredictResult(const std::vector<std::vector<double>>& output_array) {
             }
         }
     }
-
+    
     return max_value_index;
 }
 
@@ -432,6 +476,8 @@ int main(int argc, char* argv[]) {
     std::string mnist_path = "./mnist/";
     TrainAndEvaluate(mnist_path);
     //TestGradient();
+    //Train(mnist_path);
+    //Test(mnist_path);
     
     //记录结束时间
     std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
