@@ -33,6 +33,7 @@
 
 #include <glog/logging.h>
 #include <gflags/gflags.h>
+#include <omp.h>
 
 #include "neural_network.h"
 #include "full_connected_layer.h"
@@ -308,6 +309,7 @@ int TrainAndEvaluate(std::string mnist_path) {
     //记录上次的测试错误率 如果本次测试错误率高于上次 证明模型过拟合了 退出训练   
     double last_error_ratio = 1.0;
 
+    LOG(INFO) << "==============开始训练===============";
     while (true) {
         FLAGS_epoch++;
         //每次训练完成1轮后 打印一下当前情况
@@ -335,11 +337,12 @@ int TrainAndEvaluate(std::string mnist_path) {
             calculate::time::GetCurrentTime(_now);
             LOG(WARNING) << _now << " after epoch " << FLAGS_epoch
                          << ", error ratio is: %" << current_error_ratio * 100;
-            //if (current_error_ratio > last_error_ratio) {
-            //    break;
-            //} else {
-            //    last_error_ratio = current_error_ratio;
-            //}
+            if (current_error_ratio > last_error_ratio) {
+                LOG(INFO) << "==============训练结束===============";
+                break;
+            } else {
+                last_error_ratio = current_error_ratio;
+            }
         }
     }
 
@@ -381,6 +384,8 @@ int Train(std::string mnist_path) {
         return -1;
     }
     
+    int epoch = 5;
+    LOG(INFO) << "==============开始训练===============";
     while (true) {
         FLAGS_epoch++;
         //每次训练完成1轮后 打印一下当前情况
@@ -399,7 +404,13 @@ int Train(std::string mnist_path) {
                                                               mnist_training_label_data_set[8]);
         LOG(INFO) << now << " epoch " << FLAGS_epoch
                   << " finished, loss: " << loss;
+
+        if (FLAGS_epoch == epoch) {
+            break;
+        }
     }
+
+    LOG(INFO) << "==============训练结束===============";
     
     return 0;
 }
