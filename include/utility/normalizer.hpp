@@ -69,7 +69,7 @@ void Normalizer::Normalize(uint8_t number,
         }
     }
 
-    Matrix::MatrixReshape(data, 8, 1, result_matrix);
+    Matrix::Reshape(data, 8, 1, result_matrix);
 }
 
 void Normalizer::Normalize(uint8_t number, size_t rows, size_t cols, 
@@ -85,7 +85,7 @@ void Normalizer::Normalize(uint8_t number, size_t rows, size_t cols,
         }
     }
     
-    Matrix::MatrixReshape(data, rows, cols, label);
+    Matrix::Reshape(data, rows, cols, label);
 }
 
 uint8_t Normalizer::Denormalize(const std::vector<std::vector<double>>& model_predict_output) {
