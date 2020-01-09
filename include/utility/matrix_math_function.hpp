@@ -52,79 +52,120 @@ struct Matrix {
     typedef std::vector<std::vector<DataType>> Matrix2d;
     typedef std::vector<std::vector<std::vector<DataType>>> Matrix3d;
     
+    // 检查2d矩阵行列是否正确 结果矩阵不打印日志 源矩阵打印 
+    static bool MatrixCheck(const Matrix2d& matrix, bool is_write_logging);
+
+    // 检查3d矩阵深度 行 列是否正确 结果矩阵不打印日志 源矩阵打印 
+    static bool MatrixCheck(const Matrix3d& matrix, bool is_write_logging);
+
+    // 检查两个2d矩阵行列是否正确
+    static bool MatrixCheck(const Matrix2d& left_matrix, 
+                            const Matrix2d& right_matrix, 
+                            bool is_write_logging);
+
+    // 检查两个3d矩阵 深度 行 列是否正确
+    static bool MatrixCheck(const Matrix3d& left_matrix, 
+                            const Matrix3d& right_matrix, 
+                            bool is_write_logging);
+
+    // 返回元祖 矩阵的形状(高, 宽)
+    static std::tuple<size_t, size_t> GetShape(const Matrix2d& source_matrix);
+
+    // 返回元祖 矩阵的形状(深度, 高, 宽)
+    static std::tuple<size_t, size_t, size_t> GetShape(const Matrix3d& source_matrix);
+
+    //返回一个浮点型的2d矩阵
+    static std::vector<std::vector<double>> ToDouble(const std::vector<std::vector<uint8_t>>& matrix);
+
+    //返回一个浮点型的3d矩阵
+    static std::vector<std::vector<std::vector<double>>> ToDouble(const std::vector<std::vector<std::vector<uint8_t>>>& matrix);
+
     // 矩阵相乘  dot product 点积
-    static int MatrixDotProduct(const Matrix2d& left_matrix, 
-                                const Matrix2d& right_matrix, 
-                                Matrix2d& result_matrix); 
+    static int DotProduct(const Matrix2d& left_matrix, 
+                          const Matrix2d& right_matrix, 
+                          Matrix2d& result_matrix); 
 
     // 矩阵相乘 函数重载 输入为uint8_t类型 输出为double类型
-    static int MatrixDotProduct(const std::vector<std::vector<double>>& left_matrix, 
-                                const std::vector<std::vector<uint8_t>>& right_matrix, 
-                                std::vector<std::vector<double>>& result_matrix); 
+    static int DotProduct(const std::vector<std::vector<double>>& left_matrix, 
+                          const std::vector<std::vector<uint8_t>>& right_matrix, 
+                          std::vector<std::vector<double>>& result_matrix); 
 
     // 矩阵对应位置相乘 hadamark积 
-    static int MatrixHadamarkProduct(const Matrix2d& left_matrix, 
-                                     const Matrix2d& right_matrix, 
-                                     Matrix2d& result_matrix);
+    static int HadamarkProduct(const Matrix2d& left_matrix, 
+                               const Matrix2d& right_matrix, 
+                               Matrix2d& result_matrix);
 
     // 矩阵相加 
-    static int MatrixAdd(const Matrix2d& add_matrix, 
-                         const Matrix2d& beadd_matrix, 
-                         Matrix2d& result_matrix);
+    static int Add(const Matrix2d& left_matrix, 
+                   const Matrix2d& right_matrix, 
+                   Matrix2d& result_matrix);
 
     // 矩阵相减
-    static int MatrixSubtract(const Matrix2d& sub_matrix, 
-                              const Matrix2d& besub_matrix, 
-                              Matrix2d& result_matrix);
-
-    // 返回元祖 矩阵的形状(宽, 高)
-    static std::tuple<size_t, size_t> GetMatrixShape(const Matrix2d& source_matrix);
+    static int Subtract(const Matrix2d& left_matrix, 
+                        const Matrix2d& right_matrix, 
+                        Matrix2d& result_matrix);
 
     // 矩阵reshape 成几行几列  这是二维矩阵版
-    static int MatrixReshape(const Matrix2d& source_matrix,
-                             size_t rows, size_t cols, 
-                             Matrix2d& result_matrix);
+    static int Reshape(const Matrix2d& source_matrix,
+                       size_t rows, size_t cols, 
+                       Matrix2d& result_matrix);
 
     // 矩阵reshape 一维矩阵转二维矩阵版
-    static int MatrixReshape(const Matrix1d& source_matrix,
-                             size_t rows, size_t cols, 
-                             Matrix2d& result_matrix);
+    static int Reshape(const Matrix1d& source_matrix,
+                       size_t rows, size_t cols, 
+                       Matrix2d& result_matrix);
 
     // 打印二维矩阵
     static void MatrixShow(const Matrix2d& matrix);
+    
+    // 打印三维矩阵
+    static void MatrixShow(const Matrix3d& matrix);
 
     // 打印图像二维矩阵
     static void ImageMatrixShow(const std::vector<std::vector<uint8_t>>& matrix);
 
     // 创建2维矩阵 初始值为0
-    static int CreateZerosMatrix(size_t rows, size_t cols, 
-                                 Matrix2d& matrix);
+    static int CreateZeros(size_t rows, size_t cols, 
+                           Matrix2d& matrix);
 
     // 创建2维矩阵 初始值为0
-    static int CreateZerosMatrix(const std::tuple<size_t, size_t>& shape, 
-                                 Matrix2d& matrix);
+    static int CreateZeros(const std::tuple<size_t, size_t>& shape, 
+                           Matrix2d& matrix);
+
+    // 创建3维矩阵 初始值为0
+    static int CreateZeros(size_t depth, size_t height, size_t width, 
+                           Matrix3d& matrix);
+
+    // 创建3维矩阵 初始值为0
+    static int CreateZeros(const std::tuple<size_t, size_t, size_t>& shape, 
+                           Matrix3d& matrix);
 
     // 创建2维矩阵 初始值为1
-    static int CreateOnesMatrix(size_t rows, size_t cols, 
-                                Matrix2d& matrix);
+    static int CreateOnes(size_t rows, size_t cols, 
+                          Matrix2d& matrix);
 
     // 创建2维矩阵 初始值为1
-    static int CreateOnesMatrix(const std::tuple<size_t, size_t>& shape, 
-                                Matrix2d& matrix);
+    static int CreateOnes(const std::tuple<size_t, size_t>& shape, 
+                          Matrix2d& matrix);
 
     // 2维矩阵的装置矩阵
-    static int TransposeMatrix(const Matrix2d& source_matrix, 
-                               Matrix2d& result_matrix);
+    static int Transpose(const Matrix2d& source_matrix, 
+                         Matrix2d& result_matrix);
 
     // 1个值 乘以 一个2d矩阵
-    static void ValueMulMatrix(DataType value,  
-                               const Matrix2d& source_matrix, 
-                               Matrix2d& result_matrix);
+    static int ValueMulMatrix(DataType value,  
+                              const Matrix2d& source_matrix, 
+                              Matrix2d& result_matrix);
+
+    // 1个值 乘以 一个3d矩阵
+    static int ValueMulMatrix(DataType value,  
+                              const Matrix3d& source_matrix, 
+                              Matrix3d& result_matrix);
 
     // 1个值 减去 一个2d矩阵
-    static void ValueSubMatrix(DataType value,  
-                               const Matrix2d& source_matrix, 
-                               Matrix2d& result_matrix);
+    static int ValueSubMatrix(DataType value,  
+                              const Matrix2d& source_matrix, 
+                              Matrix2d& result_matrix);
 
     //计算2d矩阵的和
     static double Sum(const Matrix2d& source_matrix);
@@ -133,75 +174,301 @@ struct Matrix {
     static double MeanSquareError(const Matrix2d& output_matrix, 
                                   const Matrix2d& label);
 
-    //判断矩阵是否是Uint8_t类型
-    static bool IsImageMatrix(const std::vector<std::vector<double>>& Matrix) {
+    
+    
+    
+    
+    
+    //判断2d矩阵是否是Uint8_t类型
+    static bool IsImageMatrix(const std::vector<std::vector<double>>& matrix) {
         return false;
     }
 
-    //判断矩阵是否是Uint8_t类型
-    static bool IsImageMatrix(const std::vector<std::vector<uint8_t>>& Matrix) {
+    //判断2d矩阵是否是Uint8_t类型
+    static bool IsImageMatrix(const std::vector<std::vector<uint8_t>>& matrix) {
         return true;
     }
+
+    //判断3d矩阵是否是Uint8_t类型
+    static bool IsImageMatrix(const std::vector<std::vector<std::vector<double>>>& matrix) {
+        return false;
+    }
+
+    //判断3d矩阵是否是Uint8_t类型
+    static bool IsImageMatrix(const std::vector<std::vector<std::vector<uint8_t>>>& matrix) {
+        return true;
+    }
+
 
 };    //struct Matrix 
 
 
-//矩阵相乘(dot product)点积
-template <class DataType>
-int Matrix<DataType>::MatrixDotProduct(const Matrix2d& left_matrix, 
-                                       const Matrix2d& right_matrix, 
-                                       Matrix2d& result_matrix) {
-    int first_cols = -1;       //第一行的列数
-    int current_cols = -1;     //本行的列数
-    int left_matrix_rows = -1; //左矩阵的行
-    int left_matrix_cols = -1; //左矩阵的列
-    int right_matrix_rows = -1;//右矩阵的行
-    int right_matrix_cols = -1;//右矩阵的列
 
-    //检查左矩阵的列
-    for (int i = 0; i < left_matrix.size(); i++) {
-        if (0 == i) {
-            first_cols = left_matrix[i].size();
-            current_cols = first_cols;
-            left_matrix_cols = first_cols;
-        } else {
-            current_cols = left_matrix[i].size();
-        }
 
-        if (current_cols != first_cols) {
-            LOG(ERROR) << "matrix dot product failed, left matrix cols of each line is not equal";
-            return -1;
-        }
+
+// 检查2d源矩阵或 结果矩阵行 列是否正确  是源矩阵就打印日志 结果矩阵就不打印日志 
+template <typename DataType>
+bool Matrix<DataType>::MatrixCheck(const Matrix2d& matrix, 
+                                   bool is_write_logging) {
+    //先判断 行 和 列是否是空
+    if (0 == matrix.size()) {
+        LOG_IF(ERROR, is_write_logging) << "matrix check failed, input matrix rows is empty";
+        return false;
     }
-
-    //检查右矩阵的列
-    for (int i = 0; i < right_matrix.size(); i++) {
-        if (0 == i) {
-            first_cols = right_matrix[i].size();
-            current_cols = first_cols;
-            right_matrix_cols = first_cols;
-        } else {
-            current_cols = right_matrix[i].size();
-        }
-
-        if (current_cols != first_cols) {
-            LOG(ERROR) << "matrix dot product failed, right matrix cols of each line is not equal";
-            return -1;
-        }
+    if (0 == matrix[0].size()) {
+        LOG_IF(ERROR, is_write_logging) << "matrix check failed, input matrix cols is empty";
+        return false;
     }
     
+    size_t rows = matrix.size();
+    size_t cols = matrix[0].size();
+    //再来判断每行的列是否相同
+    for (int i = 0; i < rows; i++) {
+        if (cols != matrix[i].size()) {
+            LOG_IF(ERROR, is_write_logging) << "matrix check failed, input matrix cols of each row is not equal";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// 检查3d源矩阵或 结果矩阵深度 行 列是否正确  是源矩阵就打印日志 结果矩阵就不打印日志 
+template <typename DataType>
+bool Matrix<DataType>::MatrixCheck(const Matrix3d& matrix, 
+                                   bool is_write_logging) {
+    //先判断 深度 行 和 列是否是空
+    if (0 == matrix.size()) {
+        LOG_IF(ERROR, is_write_logging) << "matrix check failed, input matrix channel is empty";
+        return false;
+    }
+    if (0 == matrix[0].size()) {
+        LOG_IF(ERROR, is_write_logging) << "matrix check failed, input matrix height is empty";
+        return false;
+    }
+    if (0 == matrix[0][0].size()) {
+        LOG_IF(ERROR, is_write_logging) << "matrix check failed, input matrix width is empty";
+        return false;
+    }
+    
+    size_t depth = matrix.size();
+    size_t height = matrix[0].size();
+    size_t width = matrix[0][0].size();
+    //再来判断每行的列是否相同
+    for (int i = 0; i < depth; i++) {
+        if (height != matrix[i].size()) {
+            LOG_IF(ERROR, is_write_logging) << "matrix check failed, input matrix rows of each channel is not equal";
+            return false;
+        }
+        for (int j = 0; j < height; j++) {
+            if (width != matrix[i][j].size()) {
+                LOG_IF(ERROR, is_write_logging) << "matrix check failed, input matrix cols of each row is not equal";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+// 检查2d矩阵通道行列是否正确
+template <typename DataType>
+bool Matrix<DataType>::MatrixCheck(const Matrix2d& left_matrix, 
+                                   const Matrix2d& right_matrix, 
+                                   bool is_write_logging) {
+    //先分别检查两个矩阵本身行列对不对
+    if (!MatrixCheck(left_matrix, is_write_logging)) {
+        return false;
+    }
+    if (!MatrixCheck(right_matrix, is_write_logging)) {
+        return false;
+    }
+
+    //再来判断两个矩阵 行 列是否相同
+    if (left_matrix.size() != right_matrix.size()) {
+        LOG_IF(ERROR, is_write_logging) << "matrix check failed, two matrices rows is not equal";
+        return false;
+    }
+
+    for (int i = 0; i < left_matrix.size(); i++) {
+        if (left_matrix[i].size() != right_matrix[i].size()) {
+            LOG_IF(ERROR, is_write_logging) << "matrix check failed, two matrices cols of each row is not equal";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// 检查3d矩阵通道行列是否正确
+template <typename DataType>
+bool Matrix<DataType>::MatrixCheck(const Matrix3d& left_matrix, 
+                                   const Matrix3d& right_matrix, 
+                                   bool is_write_logging) {
+    //先分别检查两个矩阵本身行列对不对
+    if (!MatrixCheck(left_matrix, is_write_logging)) {
+        return false;
+    }
+    if (!MatrixCheck(right_matrix, is_write_logging)) {
+        return false;
+    }
+
+    //再来判断两个矩阵 深度 行 列是否相同
+    if (left_matrix.size() != right_matrix.size()) {
+        LOG_IF(ERROR, is_write_logging) << "matrix check failed, two matrices channel is not equal";
+        return false;
+    }
+    
+    for (int i = 0; i < left_matrix.size(); i++) {
+        if (left_matrix[i].size() != right_matrix[i].size()) {
+            LOG_IF(ERROR, is_write_logging) << "matrix check failed, two matrices rows of each channel is not equal";
+            return false;
+        }
+        for (int j = 0; j < left_matrix[i].size(); j++) {
+            if (left_matrix[i][j].size() != right_matrix[i][j].size()) {
+                LOG_IF(ERROR, is_write_logging) << "matrix check failed, two matrices cols of each row is not equal";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+//得到二维矩阵的形状
+template <typename DataType>
+std::tuple<size_t, size_t> Matrix<DataType>::GetShape(const Matrix2d& source_matrix) {
+    if (!MatrixCheck(source_matrix, true)) {
+        LOG(ERROR) << "get matrix shape failed";
+        return std::make_tuple(0, 0);
+    }
+    
+    size_t height = source_matrix.size();
+    size_t width = source_matrix[0].size();
+    
+    return std::make_tuple(height, width);
+}
+
+//得到三维矩阵的形状
+template <typename DataType>
+std::tuple<size_t, size_t, size_t> Matrix<DataType>::GetShape(const Matrix3d& source_matrix) {
+    if (!MatrixCheck(source_matrix, true)) {
+        LOG(ERROR) << "get matrix shape failed";
+        return std::make_tuple(0, 0, 0);
+    }
+    
+    size_t channel_number = source_matrix.size();
+    size_t height = source_matrix[0].size();
+    size_t width = source_matrix[0][0].size();
+    
+    return std::make_tuple(channel_number, height, width);
+}
+
+//返回一个浮点型的2d矩阵
+template <typename DataType>
+std::vector<std::vector<double>> Matrix<DataType>::ToDouble(const std::vector<std::vector<uint8_t>>& matrix) {
+    //先判断 行 和 列是否是空
+    if (0 == matrix.size()) {
+        LOG(ERROR) << "matrix check failed, input matrix rows is empty";
+        return std::vector<std::vector<std::vector<double>>>(0);
+    }
+    if (0 == matrix[0].size()) {
+        LOG(ERROR) << "matrix check failed, input matrix cols is empty";
+        return std::vector<std::vector<std::vector<double>>>(0);
+    }
+
+    size_t rows = matrix.size();
+    size_t cols = matrix[0].size();
+    
+    std::vector<std::vector<double>> double_array(rows, std::vector<double>(cols));
+
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                double_array[i][j] = matrix[i][j];           
+            }
+        }
+    }
+
+    return double_array;
+}
+
+//返回一个浮点型的3d矩阵
+template <typename DataType>
+std::vector<std::vector<std::vector<double>>> Matrix<DataType>::ToDouble(const std::vector<std::vector<std::vector<uint8_t>>>& matrix) {
+    //先判断 深度 行 和 列是否是空
+    if (0 == matrix.size()) {
+        LOG(ERROR) << "matrix check failed, input matrix channel is empty";
+        return std::vector<std::vector<std::vector<double>>>(0);
+    }
+    if (0 == matrix[0].size()) {
+        LOG(ERROR) << "matrix check failed, input matrix height is empty";
+        return std::vector<std::vector<std::vector<double>>>(0);
+    }
+    if (0 == matrix[0][0].size()) {
+        LOG(ERROR) << "matrix check failed, input matrix width is empty";
+        return std::vector<std::vector<std::vector<double>>>(0);
+    }
+
+    size_t depth = matrix.size();
+    size_t height = matrix[0].size();
+    size_t width = matrix[0][0].size();
+    
+    std::vector<std::vector<std::vector<double>>> double_array(depth, std::vector<std::vector<double>>(height), 
+                                                               std::vector<double>(width));
+
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        for (int i = 0; i < depth; i++) {
+            for (int j = 0; j < height; j++) {
+                for (int k = 0; k < width; k++) {
+                    double_array[i][j][k] = matrix[i][j][k];           
+                }
+            }
+        }
+    }
+
+    return double_array;
+}
+
+//矩阵相乘(dot product)点积
+template <class DataType>
+int Matrix<DataType>::DotProduct(const Matrix2d& left_matrix, 
+                                 const Matrix2d& right_matrix, 
+                                 Matrix2d& result_matrix) {
+    size_t left_matrix_rows = 0;    //左矩阵的行
+    size_t left_matrix_cols = 0;    //左矩阵的列
+    size_t right_matrix_rows = 0;   //右矩阵的行
+    size_t right_matrix_cols = 0;   //右矩阵的列
+
+    //getshape里已经check单个矩阵的正确性 这里不用check 
+    auto left_matrix_shape = GetShape(left_matrix);
+    if (left_matrix_shape == std::make_tuple(0, 0)) {
+        LOG(ERROR) << "matrix dot product failed";
+        return -1;
+    }
+
+    auto right_matrix_shape = GetShape(right_matrix);
+    if (right_matrix_shape == std::make_tuple(0, 0)) {
+        LOG(ERROR) << "matrix dot product failed";
+        return -1;
+    }
+
+    //元组解包
+    std::tie(left_matrix_rows, left_matrix_cols) = left_matrix_shape;
+    std::tie(right_matrix_rows, right_matrix_cols) = right_matrix_shape;
+
     //判断左矩阵的列和右矩阵的行是否相等
-    left_matrix_rows = left_matrix.size();
-    right_matrix_rows = right_matrix.size();
     if (left_matrix_cols != right_matrix_rows) {
         LOG(ERROR) << "matrix dot product failed, left matrix cols is not equal of right matrix rows";
         return -1;
     }
     
-    //判断输出矩阵是否初始化过 是的话要清零
-    if (0 != result_matrix.size()) {
-        result_matrix.clear();
-    }
+    //这里不做判断直接清零 和赋值 因为下面是+= 要是之前有值会出错 
+    result_matrix.clear();
     result_matrix = Matrix2d(left_matrix_rows, Matrix1d(right_matrix_cols));
 
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
@@ -222,60 +489,39 @@ int Matrix<DataType>::MatrixDotProduct(const Matrix2d& left_matrix,
 
 //矩阵相乘函数重载
 template <class DataType>
-int Matrix<DataType>::MatrixDotProduct(const std::vector<std::vector<double>>& left_matrix, 
-                                       const std::vector<std::vector<uint8_t>>& right_matrix, 
-                                       std::vector<std::vector<double>>& result_matrix) {
-    int first_cols = -1;       //第一行的列数
-    int current_cols = -1;     //本行的列数
-    int left_matrix_rows = -1; //左矩阵的行
-    int left_matrix_cols = -1; //左矩阵的列
-    int right_matrix_rows = -1;//右矩阵的行
-    int right_matrix_cols = -1;//右矩阵的列
+int Matrix<DataType>::DotProduct(const std::vector<std::vector<double>>& left_matrix, 
+                                 const std::vector<std::vector<uint8_t>>& right_matrix, 
+                                 std::vector<std::vector<double>>& result_matrix) {
+    size_t left_matrix_rows = 0;    //左矩阵的行
+    size_t left_matrix_cols = 0;    //左矩阵的列
+    size_t right_matrix_rows = 0;   //右矩阵的行
+    size_t right_matrix_cols = 0;   //右矩阵的列
 
-    //检查左矩阵的列
-    for (int i = 0; i < left_matrix.size(); i++) {
-        if (0 == i) {
-            first_cols = left_matrix[i].size();
-            current_cols = first_cols;
-            left_matrix_cols = first_cols;
-        } else {
-            current_cols = left_matrix[i].size();
-        }
-
-        if (current_cols != first_cols) {
-            LOG(ERROR) << "matrix dot product failed, left matrix cols of each line is not equal";
-            return -1;
-        }
+    //getshape里已经check单个矩阵的正确性 这里不用check 
+    auto left_matrix_shape = GetShape(left_matrix);
+    if (left_matrix_shape == std::make_tuple(0, 0)) {
+        LOG(ERROR) << "matrix dot product failed";
+        return -1;
     }
 
-    //检查右矩阵的列
-    for (int i = 0; i < right_matrix.size(); i++) {
-        if (0 == i) {
-            first_cols = right_matrix[i].size();
-            current_cols = first_cols;
-            right_matrix_cols = first_cols;
-        } else {
-            current_cols = right_matrix[i].size();
-        }
-
-        if (current_cols != first_cols) {
-            LOG(ERROR) << "matrix dot product failed, right matrix cols of each line is not equal";
-            return -1;
-        }
+    auto right_matrix_shape = GetShape(ToDouble(right_matrix));
+    if (right_matrix_shape == std::make_tuple(0, 0)) {
+        LOG(ERROR) << "matrix dot product failed";
+        return -1;
     }
-    
+
+    //元组解包
+    std::tie(left_matrix_rows, left_matrix_cols) = left_matrix_shape;
+    std::tie(right_matrix_rows, right_matrix_cols) = right_matrix_shape;
+
     //判断左矩阵的列和右矩阵的行是否相等
-    left_matrix_rows = left_matrix.size();
-    right_matrix_rows = right_matrix.size();
     if (left_matrix_cols != right_matrix_rows) {
         LOG(ERROR) << "matrix dot product failed, left matrix cols is not equal of right matrix rows";
         return -1;
     }
     
-    //判断输出矩阵是否初始化过 是的话要清零
-    if (0 != result_matrix.size()) {
-        result_matrix.clear();
-    }
+    //这里不做判断直接清零 和赋值 因为下面是+= 要是之前有值会出错 
+    result_matrix.clear();
     result_matrix = Matrix2d(left_matrix_rows, Matrix1d(right_matrix_cols));
 
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
@@ -296,38 +542,19 @@ int Matrix<DataType>::MatrixDotProduct(const std::vector<std::vector<double>>& l
 
 //hadamark积 也就是矩阵相应位置相乘
 template <typename DataType>
-int Matrix<DataType>::MatrixHadamarkProduct(const Matrix2d& left_matrix, 
-                                            const Matrix2d& right_matrix, 
-                                            Matrix2d& result_matrix) {
-    if (left_matrix.size() != right_matrix.size()) {
-        LOG(ERROR) << "matrix hadamark product failed, left matrix rows is not equal of right matrix rows";
+int Matrix<DataType>::HadamarkProduct(const Matrix2d& left_matrix, 
+                                      const Matrix2d& right_matrix, 
+                                      Matrix2d& result_matrix) {
+    //检查 两个输入矩阵的正确性 内部会先check单独矩阵的行 列 
+    if (!MatrixCheck(left_matrix, right_matrix, true)) {
+        LOG(ERROR) << "matrix hadamark product failed";
         return -1;
     }
-    
-    for (int i = 0; i < left_matrix.size(); i++) {
-        if (left_matrix[i].size() != right_matrix[i].size()) {
-            LOG(ERROR) << "matrix hadamark product failed, left matrix cols is not equal of right matrix cols";
-            return -1;
-        }
-    }
 
-    if (0 == result_matrix.size()) {
+    //检查结果矩阵是否有 并且格式正确  不正确就用赋值拷贝重新赋值
+    if (!MatrixCheck(left_matrix, result_matrix, false)) {
+        result_matrix.clear();
         result_matrix = left_matrix;
-    } else {
-        //对输出矩阵做一下检查 看行列是否符合 如果不对就清空容器 重新赋值
-        if (result_matrix.size() != left_matrix.size()) {
-            result_matrix.clear();
-            result_matrix = left_matrix;
-        } else {
-            //如果行符合了 再来检查一下列
-            for (int i = 0; i < result_matrix.size(); i++) {
-                if (result_matrix[i].size() != left_matrix[i].size()) {
-                    result_matrix.clear();
-                    result_matrix = left_matrix;
-                    break;
-                }
-            }
-        }
     }
 
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
@@ -346,49 +573,28 @@ int Matrix<DataType>::MatrixHadamarkProduct(const Matrix2d& left_matrix,
 
 //矩阵相加
 template <typename DataType>
-int Matrix<DataType>::MatrixAdd(const Matrix2d& add_matrix, 
-                                const Matrix2d& beadd_matrix, 
-                                Matrix2d& result_matrix) {
-    if (add_matrix.size() != beadd_matrix.size()) {
-        LOG(ERROR) << "matrix add failed, left matrix rows is not equal of right matrix rows";
+int Matrix<DataType>::Add(const Matrix2d& left_matrix, 
+                          const Matrix2d& right_matrix, 
+                          Matrix2d& result_matrix) {
+    //检查 两个输入矩阵的正确性
+    if (!MatrixCheck(left_matrix, right_matrix, true)) {
+        LOG(ERROR) << "matrix add failed";
         return -1;
     }
-    
-    //遍历每行 是否每列都是相同的
-    for (int i = 0; i < add_matrix.size(); i++) {
-        if (add_matrix[i].size() != beadd_matrix[i].size()) {
-            LOG(ERROR) << "matrix add failed, left matrix cols is not equal of right matrix cols";
-            return -1;
-        }
+
+    //检查结果矩阵是否有 并且格式正确  不正确就用赋值拷贝重新赋值
+    if (!MatrixCheck(left_matrix, result_matrix, false)) {
+        result_matrix.clear();
+        result_matrix = left_matrix;
     }
 
-    //判断一下输出的矩阵是否是空 还没有初始化
-    if (0 == result_matrix.size()) {
-        result_matrix = Matrix2d(add_matrix.size(), Matrix1d(add_matrix[0].size()));
-    } else {
-        //对输出矩阵做一下检查 看行列是否符合 如果不对就清空容器 重新赋值
-        if (result_matrix.size() != add_matrix.size()) {
-            result_matrix.clear();
-            result_matrix = add_matrix;
-        } else {
-            //如果行符合了 再来检查一下列
-            for (int i = 0; i < result_matrix.size(); i++) {
-                if (result_matrix[i].size() != add_matrix[i].size()) {
-                    result_matrix.clear();
-                    result_matrix = add_matrix;
-                    break;
-                }
-            }
-        }
-    }
-        
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
     {
         #pragma omp for schedule(static) 
         //矩阵相加
-        for (int i = 0; i < add_matrix.size(); i++) {
-            for (int j = 0; j < add_matrix[i].size(); j++) {
-                result_matrix[i][j] = add_matrix[i][j] + beadd_matrix[i][j];
+        for (int i = 0; i < left_matrix.size(); i++) {
+            for (int j = 0; j < left_matrix[i].size(); j++) {
+                result_matrix[i][j] = left_matrix[i][j] + right_matrix[i][j];
             }
         }
     }
@@ -398,49 +604,28 @@ int Matrix<DataType>::MatrixAdd(const Matrix2d& add_matrix,
 
 //矩阵相减
 template <typename DataType>
-int Matrix<DataType>::MatrixSubtract(const Matrix2d& sub_matrix, 
-                                     const Matrix2d& besub_matrix, 
-                                     Matrix2d& result_matrix) {
-    if (sub_matrix.size() != besub_matrix.size()) {
-        LOG(ERROR) << "matrix subtract failed, left matrix rows is not equal of right matrix rows";
+int Matrix<DataType>::Subtract(const Matrix2d& left_matrix, 
+                               const Matrix2d& right_matrix, 
+                               Matrix2d& result_matrix) {
+    //检查 两个输入矩阵的正确性
+    if (!MatrixCheck(left_matrix, right_matrix, true)) {
+        LOG(ERROR) << "matrix subtract failed";
         return -1;
     }
-    
-    //遍历每行 是否每列都是相同的
-    for (int i = 0; i < sub_matrix.size(); i++) {
-        if (sub_matrix[i].size() != besub_matrix[i].size()) {
-            LOG(ERROR) << "matrix subtract failed, left matrix cols is not equal of right matrix cols";
-            return -1;
-        }
-    }
 
-    //判断一下输出的矩阵是否是空 还没有初始化
-    if (0 == result_matrix.size()) {
-        result_matrix = Matrix2d(sub_matrix.size(), Matrix1d(sub_matrix[0].size()));
-    } else {
-        //对输出矩阵做一下检查 看行列是否符合 如果不对就清空容器 重新赋值
-        if (result_matrix.size() != sub_matrix.size()) {
-            result_matrix.clear();
-            result_matrix = sub_matrix;
-        } else {
-            //如果行符合了 再来检查一下列
-            for (int i = 0; i < result_matrix.size(); i++) {
-                if (result_matrix[i].size() != sub_matrix[i].size()) {
-                    result_matrix.clear();
-                    result_matrix = sub_matrix;
-                    break;
-                }
-            }
-        }
+    //检查结果矩阵是否有 并且格式正确  不正确就用赋值拷贝重新赋值
+    if (!MatrixCheck(left_matrix, result_matrix, false)) {
+        result_matrix.clear();
+        result_matrix = left_matrix;
     }
         
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
     {
         #pragma omp for schedule(static) 
         //矩阵相减
-        for (int i = 0; i < sub_matrix.size(); i++) {
-            for (int j = 0; j < sub_matrix[i].size(); j++) {
-                result_matrix[i][j] = sub_matrix[i][j] - besub_matrix[i][j];
+        for (int i = 0; i < left_matrix.size(); i++) {
+            for (int j = 0; j < left_matrix[i].size(); j++) {
+                result_matrix[i][j] = left_matrix[i][j] - right_matrix[i][j];
             }
         }
     }
@@ -448,32 +633,12 @@ int Matrix<DataType>::MatrixSubtract(const Matrix2d& sub_matrix,
     return 0;
 }
 
-//得到矩阵的形状
-template <typename DataType>
-std::tuple<size_t, size_t> Matrix<DataType>::GetMatrixShape(const Matrix2d& source_matrix) {
-    if (0 == source_matrix.size()) {
-        LOG(ERROR) << "get matrix shape failed, input matrix is empty";
-        return std::make_tuple(0, 0);
-    }
-    
-    size_t height = source_matrix.size();
-    size_t width = source_matrix[0].size();
-    
-    for (int i = 0; i < source_matrix.size(); i++) {
-        if (width != source_matrix[i].size()) {
-            LOG(ERROR) << "get matrix shape failed, input matrix cols of each line is not equal";
-            return std::make_tuple(0, 0);
-        }
-    }
-
-    return std::make_tuple(height, width);
-}
 
 //matrix reshape  把原矩阵变成 几行几列
 template <typename DataType>
-int Matrix<DataType>::MatrixReshape(const Matrix2d& source_matrix,
-                                    size_t rows, size_t cols, 
-                                    Matrix2d& result_matrix) {
+int Matrix<DataType>::Reshape(const Matrix2d& source_matrix,
+                              size_t rows, size_t cols, 
+                              Matrix2d& result_matrix) {
     if (rows <= 0) {
         LOG(ERROR) << "reshape matrix failed, input rows <= 0";
         return -1;
@@ -483,6 +648,12 @@ int Matrix<DataType>::MatrixReshape(const Matrix2d& source_matrix,
         return -1;
     }
     
+    //check一下源矩阵
+    if (!MatrixCheck(source_matrix, true)) {
+        LOG(ERROR) << "reshape matrix failed";
+        return -1;
+    }
+
     //检查输入矩阵的总数量 是否等于 要reshape的总量
     int matrix_total_size = 0;
     for (int i = 0; i < source_matrix.size(); i++) {
@@ -503,36 +674,14 @@ int Matrix<DataType>::MatrixReshape(const Matrix2d& source_matrix,
         }
     }
     
-    //再赋值给新数组  判断一下输出矩阵有没有初始化
-    if (0 == result_matrix.size()) {
-        result_matrix.reserve(rows);
-
-        for (int i = 0; i < rows; i++) {
-            Matrix1d cols_array;
-            cols_array.reserve(cols);
-            for (int j = 0; j < cols; j++) {
-                cols_array.push_back(matrix_data[index++]);
-            }
-            result_matrix.push_back(cols_array);
-        }
-    } else {
-        //对输出矩阵的行列做判断
-        if (rows != result_matrix.size()) {
-            result_matrix.clear();
-            result_matrix = source_matrix;
-        } else {
-            for (int i = 0; i < result_matrix.size(); i++) {
-                if (cols != result_matrix[i].size()) {
-                    result_matrix.clear();
-                    result_matrix = source_matrix;
-                    break;
-                }
-            }
-        }
+    //check一下输出数组
+    if (!MatrixCheck(source_matrix, result_matrix, false)) {
+        result_matrix.clear();
+        result_matrix = source_matrix;
     }
-
+    
     index = 0;
-    //reshape
+    //reshape 把一维数组值赋给新数组  
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             result_matrix[i][j] = matrix_data[index++];    
@@ -544,15 +693,21 @@ int Matrix<DataType>::MatrixReshape(const Matrix2d& source_matrix,
 
 //接收输入矩阵为1维矩阵 函数重载
 template <typename DataType>
-int Matrix<DataType>::MatrixReshape(const Matrix1d& source_matrix,
-                                    size_t rows, size_t cols, 
-                                    Matrix2d& result_matrix) {
+int Matrix<DataType>::Reshape(const Matrix1d& source_matrix,
+                              size_t rows, size_t cols, 
+                              Matrix2d& result_matrix) {
     if (rows <= 0) {
         LOG(ERROR) << "reshape matrix failed, input rows <= 0";
         return -1;
     }
     if (cols <= 0) {
         LOG(ERROR) << "reshape matrix failed, input cols <= 0";
+        return -1;
+    }
+
+    //check 源矩阵
+    if (0 == source_matrix.size()) {
+        LOG(ERROR) << "reshape matrix failed, input matrix is empty";
         return -1;
     }
 
@@ -564,23 +719,10 @@ int Matrix<DataType>::MatrixReshape(const Matrix1d& source_matrix,
         return -1;
     }
     
-    //判断输出矩阵有没有初始化
-    if (0 == result_matrix.size()) {
-        result_matrix = Matrix2d(rows, Matrix1d(cols));
-    } else {
-        //对输出矩阵的行列做判断
-        if (rows != result_matrix.size()) {
-            result_matrix.clear();
-            result_matrix = Matrix2d(rows, Matrix1d(cols));
-        } else {
-            for (int i = 0; i < result_matrix.size(); i++) {
-                if (cols != result_matrix[i].size()) {
-                    result_matrix.clear();
-                    result_matrix = Matrix2d(rows, Matrix1d(cols));
-                    break;
-                }
-            }
-        }
+    //check输出矩阵
+    if (!MatrixCheck(source_matrix, result_matrix, false)) {
+        result_matrix.clear();
+        result_matrix = source_matrix;
     }
 
     int index = 0;
@@ -594,11 +736,12 @@ int Matrix<DataType>::MatrixReshape(const Matrix1d& source_matrix,
     return 0;
 }
 
-//打印矩阵
+//打印二维矩阵
 template <typename DataType>
 void Matrix<DataType>::MatrixShow(const Matrix2d& matrix) {
-    if (0 == matrix.size()) {
-        LOG(ERROR) << "print matrix failed, input matrix is empty";
+    //check 源矩阵
+    if (!MatrixCheck(matrix, true)) {
+        LOG(ERROR) << "print matrix failed";
         return ;
     }
 
@@ -637,6 +780,72 @@ void Matrix<DataType>::MatrixShow(const Matrix2d& matrix) {
     std::cout << std::endl;
 }
 
+//打印三维矩阵
+template <typename DataType>
+void Matrix<DataType>::MatrixShow(const Matrix3d& matrix) {
+    //getshape 会check
+    auto shape = GetShape(matrix);
+    if (shape == std::make_tuple(0, 0, 0)) {
+        LOG(ERROR) << "print matrix failed";
+        return ;
+    }
+    //元祖解包
+    size_t channel_number;
+    size_t height;
+    size_t width;
+    std::tie(channel_number, height, width) = shape;
+
+    for (int i = 0; i < channel_number; i++) {
+        for (int j = 0; j < height; j++) {
+            for (int k = 0; k < width; k++) {
+                if (0 == i
+                        && 0 == j
+                        && 0 == k) {
+                    std::cout << "[[[";
+                } else if (0 == j
+                            && 0 == k) {
+                    std::cout << " [[";
+                } else if (0 == k) {
+                    std::cout << "  [";
+                }
+
+                //如果是负数 则会多占一格 那么是正数 就多加个空格
+                //设置浮点的格式 后面6位
+                int space_number = 0;
+                if (matrix[i][j][k] >= 0) {
+                    if ((matrix[i][j][k] / 10.0) < 1.0) {
+                        space_number += 3;
+                    } else {
+                        space_number += 2;
+                    }
+                } else {
+                    if ((matrix[i][j][k] / 10.0) < 1.0) {
+                        space_number += 2;
+                    } else {
+                        space_number += 1;
+                    }
+                }
+
+                std::cout << std::showpoint << std::setiosflags(std::ios::fixed)
+                          << std::setprecision(8) << std::string(space_number, ' ')
+                          << matrix[i][j][k];
+           
+                if ((i + 1) == channel_number 
+                        && (j + 1) == height
+                        && (k + 1) == width) {
+                    std::cout << "  ]]]" << std::endl;
+                } else if ((j + 1) == height 
+                            && (k + 1) == width) {
+                    std::cout << "  ]]\n" << std::endl;
+                } else if ((k + 1) == width) {
+                    std::cout << "  ]" << std::endl;
+                }
+            }
+        }
+    }
+    std::cout << std::endl << std::endl;
+}
+
 // 打印图像二维矩阵
 template <typename DataType>
 void Matrix<DataType>::ImageMatrixShow(const std::vector<std::vector<uint8_t>>& matrix) {
@@ -662,10 +871,12 @@ void Matrix<DataType>::ImageMatrixShow(const std::vector<std::vector<uint8_t>>& 
     std::cout << std::endl;
 }
 
-//创建0矩阵
+
+
+// 创建0矩阵
 template <typename DataType>
-int Matrix<DataType>::CreateZerosMatrix(size_t rows, size_t cols, 
-                                        Matrix2d& matrix) {
+int Matrix<DataType>::CreateZeros(size_t rows, size_t cols, 
+                                  Matrix2d& matrix) {
     if (rows <= 0) {
         LOG(ERROR) << "create matrix failed, input rows <= 0";
         return -1;
@@ -675,17 +886,16 @@ int Matrix<DataType>::CreateZerosMatrix(size_t rows, size_t cols,
         return -1;
     }
 
-    if (0 != matrix.size()) {
-        matrix.clear();
-    }
-    
+    //不用check  直接赋值拷贝
     matrix = Matrix2d(rows, Matrix1d(cols, 0));
+
+    return 0;
 }
 
-//创建0矩阵
+// 创建0矩阵
 template <typename DataType>
-int Matrix<DataType>::CreateZerosMatrix(const std::tuple<size_t, size_t>& shape, 
-                                        Matrix2d& matrix) {
+int Matrix<DataType>::CreateZeros(const std::tuple<size_t, size_t>& shape, 
+                                  Matrix2d& matrix) {
     size_t rows = -1;
     size_t cols = -1;
     std::tie(rows, cols) = shape;
@@ -698,17 +908,64 @@ int Matrix<DataType>::CreateZerosMatrix(const std::tuple<size_t, size_t>& shape,
         return -1;
     }
 
-    if (0 != matrix.size()) {
-        matrix.clear();
-    }
-    
+    //不用check  直接赋值拷贝
     matrix = Matrix2d(rows, Matrix1d(cols, 0));
+
+    return 0;
 }
 
-//创建1矩阵
+// 创建3维矩阵 初始值为0
 template <typename DataType>
-int Matrix<DataType>::CreateOnesMatrix(size_t rows, size_t cols, 
-                                       Matrix2d& matrix) {
+int Matrix<DataType>::CreateZeros(size_t depth, size_t height, size_t width, 
+                                  Matrix3d& matrix) {
+    if (depth <= 0) {
+        LOG(ERROR) << "create matrix failed, input depth <= 0";
+        return -1;
+    }
+    if (height <= 0) {
+        LOG(ERROR) << "create matrix failed, input height <= 0";
+        return -1;
+    }
+    if (width <= 0) {
+        LOG(ERROR) << "create matrix failed, input width <= 0";
+        return -1;
+    }
+
+    //不用check  直接赋值拷贝
+    matrix = Matrix3d(depth, Matrix2d(height, Matrix1d(width, 0)));
+}
+
+// 创建3维矩阵 初始值为0
+template <typename DataType>
+int Matrix<DataType>::CreateZeros(const std::tuple<size_t, size_t, size_t>& shape, 
+                                  Matrix3d& matrix) {
+    size_t depth = -1;
+    size_t height = -1;
+    size_t width = -1;
+    std::tie(depth, height, width) = shape;
+    if (depth <= 0) {
+        LOG(ERROR) << "create matrix failed, input depth <= 0";
+        return -1;
+    }
+    if (height <= 0) {
+        LOG(ERROR) << "create matrix failed, input height <= 0";
+        return -1;
+    }
+    if (width <= 0) {
+        LOG(ERROR) << "create matrix failed, input width <= 0";
+        return -1;
+    }
+
+    //不用check  直接赋值拷贝
+    matrix = Matrix3d(depth, Matrix2d(height, Matrix1d(width, 0)));
+
+    return 0;
+}
+
+//创建2维矩阵 初始值为1
+template <typename DataType>
+int Matrix<DataType>::CreateOnes(size_t rows, size_t cols, 
+                                 Matrix2d& matrix) {
     if (rows <= 0) {
         LOG(ERROR) << "create matrix failed, input rows <= 0";
         return -1;
@@ -718,17 +975,16 @@ int Matrix<DataType>::CreateOnesMatrix(size_t rows, size_t cols,
         return -1;
     }
 
-    if (0 != matrix.size()) {
-        matrix.clear();
-    }
-
+    //不用check  直接赋值拷贝
     matrix = Matrix2d(rows, Matrix1d(cols, 1));
+
+    return 0;
 }
 
-//创建1矩阵
+//创建2维矩阵 初始值为1
 template <typename DataType>
-int Matrix<DataType>::CreateOnesMatrix(const std::tuple<size_t, size_t>& shape, 
-                                       Matrix2d& matrix) {
+int Matrix<DataType>::CreateOnes(const std::tuple<size_t, size_t>& shape, 
+                                 Matrix2d& matrix) {
     size_t rows = -1;
     size_t cols = -1;
     std::tie(rows, cols) = shape;
@@ -741,31 +997,27 @@ int Matrix<DataType>::CreateOnesMatrix(const std::tuple<size_t, size_t>& shape,
         return -1;
     }
 
-    if (0 != matrix.size()) {
-        matrix.clear();
-    }
-
+    //不用check  直接赋值拷贝
     matrix = Matrix2d(rows, Matrix1d(cols, 1));
+
+    return 0;
 }
 
 //转置矩阵
 template <typename DataType>
-int Matrix<DataType>::TransposeMatrix(const Matrix2d& source_matrix, 
-                                      Matrix2d& result_matrix) {
-    int source_matrix_cols = 0;
-    int source_matrix_rows = source_matrix.size();
-    //检查源矩阵每列是否相同
-    for (int i = 0; i < source_matrix.size(); i++) {
-        if (0 == i) {
-           source_matrix_cols = source_matrix[i].size();
-        } else {
-            if (source_matrix_cols != source_matrix[i].size()) {
-                LOG(ERROR) << "transpose matrix failed, input matrix cols of each line is not equal";
-               return -1;
-            }
-        }
+int Matrix<DataType>::Transpose(const Matrix2d& source_matrix, 
+                                Matrix2d& result_matrix) {
+    size_t source_matrix_rows = 0;
+    size_t source_matrix_cols = 0;
+    //reshape 会check
+    auto shape = GetShape(source_matrix);
+    if (shape == std::make_tuple(0, 0)) {
+        LOG(ERROR) << "transpose matrix failed";
+        return -1;
     }
-    
+    //元组解包
+    std::tie(source_matrix_rows, source_matrix_cols) = shape;
+
     //如果数组数据没有初始化 就用移动赋值函数初始化 
     //行为原矩阵的列 列为原矩阵的行 比如2 * 4  变成4 * 2
     if (0 == result_matrix.size()) {
@@ -800,29 +1052,23 @@ int Matrix<DataType>::TransposeMatrix(const Matrix2d& source_matrix,
     return 0;
 }
 
-//矩阵都乘以一个值
+//2d矩阵都乘以一个值
 template <typename DataType>
-void Matrix<DataType>::ValueMulMatrix(DataType value,  
-                                      const Matrix2d& source_matrix, 
-                                      Matrix2d& result_matrix) {
-    if (0 == result_matrix.size()) {
-        result_matrix = source_matrix;
-    } else {
-        //对输出矩阵的行列做判断
-        if (source_matrix.size() != result_matrix.size()) {
-            result_matrix.clear();
-            result_matrix = source_matrix;
-        } else {
-            for (int i = 0; i < result_matrix.size(); i++) {
-                if (source_matrix[i].size() != result_matrix[i].size()) {
-                    result_matrix.clear();
-                    result_matrix = source_matrix;
-                    break;
-                }
-            }
-        }
+int Matrix<DataType>::ValueMulMatrix(DataType value,  
+                                     const Matrix2d& source_matrix, 
+                                     Matrix2d& result_matrix) {
+    //check源矩阵
+    if (!MatrixCheck(source_matrix, true)) {
+        LOG(ERROR) << "value mul matrix failed";
+        return -1;
     }
 
+    //check结果矩阵
+    if (!MatrixCheck(source_matrix, result_matrix, false)) {
+        result_matrix.clear();
+        result_matrix = source_matrix;
+    }
+    
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
     {
         #pragma omp for schedule(static) 
@@ -832,30 +1078,58 @@ void Matrix<DataType>::ValueMulMatrix(DataType value,
             }
         }
     }
+
+    return 0;
 }
 
-//一个值减去矩阵每个值
+//3d矩阵都乘以一个值
 template <typename DataType>
-void Matrix<DataType>::ValueSubMatrix(DataType value,  
-                                      const Matrix2d& source_matrix, 
-                                      Matrix2d& result_matrix) {
-    if (0 == result_matrix.size()) {
+int Matrix<DataType>::ValueMulMatrix(DataType value,  
+                                     const Matrix3d& source_matrix, 
+                                     Matrix3d& result_matrix) {
+    //check源矩阵
+    if (!MatrixCheck(source_matrix, true)) {
+        LOG(ERROR) << "value mul matrix failed";
+        return -1;
+    }
+
+    //check结果矩阵
+    if (!MatrixCheck(source_matrix, result_matrix, false)) {
+        result_matrix.clear();
         result_matrix = source_matrix;
-    } else {
-        //对输出矩阵的行列做判断
-        if (source_matrix.size() != result_matrix.size()) {
-            result_matrix.clear();
-            result_matrix = source_matrix;
-        } else {
-            for (int i = 0; i < result_matrix.size(); i++) {
-                if (source_matrix[i].size() != result_matrix[i].size()) {
-                    result_matrix.clear();
-                    result_matrix = source_matrix;
-                    break;
+    } 
+
+#pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
+    {
+        #pragma omp for schedule(static) 
+        for (int i = 0; i < source_matrix.size(); i++) {
+            for (int j = 0; j < source_matrix[i].size(); j++) {
+                for (int k = 0; k < source_matrix[i][j].size; k++) {
+                    result_matrix[i][j][k] = source_matrix[i][j][k] * value;
                 }
             }
         }
     }
+
+    return 0;
+}
+
+//一个值减去矩阵每个值
+template <typename DataType>
+int Matrix<DataType>::ValueSubMatrix(DataType value,  
+                                     const Matrix2d& source_matrix, 
+                                     Matrix2d& result_matrix) {
+    //check源矩阵
+    if (!MatrixCheck(source_matrix, true)) {
+        LOG(ERROR) << "value sub matrix failed";
+        return -1;
+    }
+
+    //check结果矩阵
+    if (!MatrixCheck(source_matrix, result_matrix, false)) {
+        result_matrix.clear();
+        result_matrix = source_matrix;
+    } 
 
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
     {
@@ -866,6 +1140,8 @@ void Matrix<DataType>::ValueSubMatrix(DataType value,
             }
         }
     }
+
+    return 0;
 }
 
 //计算2d矩阵的和
@@ -939,11 +1215,16 @@ struct Random {
 
     //生成服从正态分布的随机数二维矩阵
     static int Normal(float mean, float stddev, size_t rows, size_t cols, 
-                      std::vector<std::vector<double>>& random_matrix);
+                      Matrix2d& random_matrix);
 
     //生成随机的浮点数二维矩阵
     static int Uniform(float a, float b, size_t rows, size_t cols, 
-                       std::vector<std::vector<double>>& random_matrix);
+                       Matrix2d& random_matrix);
+
+    //生成随机的浮点数三维矩阵
+    static int Uniform(float a, float b, size_t channel_number, 
+                       size_t height, size_t width, 
+                       Matrix3d& random_matrix);
 
     //生成随机的整数二维矩阵
     static int RandInt(float a, float b, size_t rows, size_t cols, 
@@ -955,7 +1236,7 @@ struct Random {
 //生成服从正态分布的随机数二维矩阵
 template <typename DataType>
 int Random<DataType>::Normal(float mean, float stddev, size_t rows, size_t cols, 
-                             std::vector<std::vector<double>>& random_matrix) {
+                             Matrix2d& random_matrix) {
     if (rows <= 0) {
         LOG(ERROR) << "get normal distribution matrix failed, input rows <= 0";
         return -1;
@@ -987,10 +1268,10 @@ int Random<DataType>::Normal(float mean, float stddev, size_t rows, size_t cols,
 }
 
 
-//生成一个 rows * cols的随机数矩阵 值的范围在a 到 b之间 
+//生成一个 rows * cols的随机数二维矩阵 值的范围在a 到 b之间 
 template <typename DataType>
 int Random<DataType>::Uniform(float a, float b, size_t rows, size_t cols, 
-                              std::vector<std::vector<double>>& random_matrix) {
+                              Matrix2d& random_matrix) {
     if (rows <= 0) {
         LOG(ERROR) << "get uniform distribution matrix failed, input rows <= 0";
         return -1;
@@ -1022,6 +1303,50 @@ int Random<DataType>::Uniform(float a, float b, size_t rows, size_t cols,
             random_array.push_back(generate_random(random_engine));
         }
         random_matrix.push_back(random_array);
+    }
+
+    return 0;
+}
+
+//生成一个 rows * cols的随机数三维矩阵 值的范围在a 到 b之间 
+template <typename DataType>
+int Random<DataType>::Uniform(float a, float b, size_t channel_number, 
+                              size_t height, size_t width, 
+                              Matrix3d& random_matrix) {
+                
+    if (channel_number <= 0) {
+        LOG(ERROR) << "get uniform distribution matrix failed, input channel number <= 0";
+        return -1;
+    }
+    if (height <= 0) {
+        LOG(ERROR) << "get uniform distribution matrix failed, input height <= 0";
+        return -1;
+    }
+    if (width <= 0) {
+        LOG(ERROR) << "get uniform distribution matrix failed, input width <= 0";
+        return -1;
+    }
+    if (b < a) {
+        LOG(ERROR) << "get uniform distribution matrix failed, max value < min value";
+        return -1;
+    }
+    
+    //判断输出矩阵是否初始化过
+    if (0 != random_matrix.size()) {
+        random_matrix.clear();
+    }
+    random_matrix = Matrix3d(channel_number, Matrix2d(height, Matrix1d(width)));
+    
+    std::random_device rand_device;
+    //static std::mt19937 gen(rand_device());
+    std::default_random_engine random_engine(rand_device());
+    std::uniform_real_distribution<double> generate_random(a, b);
+    for (int i = 0; i < channel_number; i++) {
+        for (int j = 0; j < height; j++) {
+            for (int k = 0; k < width; k++) {
+                random_matrix[i][j][k] = generate_random(random_engine);
+            }
+        }
     }
 
     return 0;
@@ -1150,8 +1475,8 @@ void Activator<DataType>::SigmoidBackward(const ImageMatrix2d& output_array,
                                           Matrix2d& delta_array) {
     //如果输出数组未初始化 
     if (0 == delta_array.size()) {
-        auto shape = matrix::Matrix<uint8_t>::GetMatrixShape(output_array);
-        matrix::Matrix<double>::CreateZerosMatrix(shape, delta_array);
+        auto shape = matrix::Matrix<uint8_t>::GetShape(output_array);
+        matrix::Matrix<double>::CreateZeros(shape, delta_array);
     }
 
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
