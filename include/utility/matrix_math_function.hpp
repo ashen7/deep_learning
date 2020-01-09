@@ -370,11 +370,11 @@ std::vector<std::vector<double>> Matrix<DataType>::ToDouble(const std::vector<st
     //先判断 行 和 列是否是空
     if (0 == matrix.size()) {
         LOG(ERROR) << "matrix check failed, input matrix rows is empty";
-        return std::vector<std::vector<std::vector<double>>>(0);
+        return std::vector<std::vector<double>>(0, std::vector<double>(0));
     }
     if (0 == matrix[0].size()) {
         LOG(ERROR) << "matrix check failed, input matrix cols is empty";
-        return std::vector<std::vector<std::vector<double>>>(0);
+        return std::vector<std::vector<double>>(0, std::vector<double>(0));
     }
 
     size_t rows = matrix.size();
@@ -401,15 +401,18 @@ std::vector<std::vector<std::vector<double>>> Matrix<DataType>::ToDouble(const s
     //先判断 深度 行 和 列是否是空
     if (0 == matrix.size()) {
         LOG(ERROR) << "matrix check failed, input matrix channel is empty";
-        return std::vector<std::vector<std::vector<double>>>(0);
+        return std::vector<std::vector<std::vector<double>>>(0, 
+                                    std::vector<std::vector<double>>(0, std::vector<double>(0)));
     }
     if (0 == matrix[0].size()) {
         LOG(ERROR) << "matrix check failed, input matrix height is empty";
-        return std::vector<std::vector<std::vector<double>>>(0);
+        return std::vector<std::vector<std::vector<double>>>(0, 
+                                    std::vector<std::vector<double>>(0, std::vector<double>(0)));
     }
     if (0 == matrix[0][0].size()) {
         LOG(ERROR) << "matrix check failed, input matrix width is empty";
-        return std::vector<std::vector<std::vector<double>>>(0);
+        return std::vector<std::vector<std::vector<double>>>(0, 
+                                    std::vector<std::vector<double>>(0, std::vector<double>(0)));
     }
 
     size_t depth = matrix.size();
@@ -719,11 +722,8 @@ int Matrix<DataType>::Reshape(const Matrix1d& source_matrix,
         return -1;
     }
     
-    //check输出矩阵
-    if (!MatrixCheck(source_matrix, result_matrix, false)) {
-        result_matrix.clear();
-        result_matrix = source_matrix;
-    }
+    result_matrix.clear();
+    result_matrix = Matrix2d(rows, Matrix1d(cols));
 
     int index = 0;
     //再赋值给新数组
