@@ -18,7 +18,7 @@
 #ifndef UTILITY_SINGLETON_HPP_
 #define UTILITY_SINGLETON_HPP_
 
-//单例模式 饿汉式
+//单例模式 懒汉式
 namespace utility {
 
 template <typename T>
