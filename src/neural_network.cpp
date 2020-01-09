@@ -262,12 +262,12 @@ int NeuralNetwork::CalcGradient(const Matrix2d& output_array,
      
     //计算(label - output)
     Matrix2d sub_array; 
-    if (-1 == Matrix::MatrixSubtract(label, output_array, sub_array)) {
+    if (-1 == Matrix::Subtract(label, output_array, sub_array)) {
         return -1;
     }
 
     //再计算output(1 - output)(label - output)  得到输出层的delta array误差项
-    if (-1 == Matrix::MatrixHadamarkProduct(delta_array, sub_array, delta_array)) {
+    if (-1 == Matrix::HadamarkProduct(delta_array, sub_array, delta_array)) {
         return -1;
     }
     
@@ -319,7 +319,7 @@ void NeuralNetwork::GradientCheck(const Matrix2d& sample,
     for (auto fc_layer : fc_layers_array_) {
         auto& weights_array = fc_layer->get_weights_array();
         //元祖解包
-        std::tie(weights_rows, weights_cols) = Matrix::GetMatrixShape(weights_array);
+        std::tie(weights_rows, weights_cols) = Matrix::GetShape(weights_array);
         for (int i = 0; i < weights_rows; i++) {
             for (int j = 0; j < weights_cols; j++) {
                 //依次改变每一个权值 来看看网络的loss情况
@@ -361,7 +361,7 @@ void NeuralNetwork::GradientCheck(const ImageMatrix2d& sample,
     for (auto fc_layer : fc_layers_array_) {
         auto& weights_array = fc_layer->get_weights_array();
         //元祖解包
-        std::tie(weights_rows, weights_cols) = Matrix::GetMatrixShape(weights_array);
+        std::tie(weights_rows, weights_cols) = Matrix::GetShape(weights_array);
         for (int i = 0; i < weights_rows; i++) {
             for (int j = 0; j < weights_cols; j++) {
                 //依次改变每一个权值 来看看网络的loss情况
