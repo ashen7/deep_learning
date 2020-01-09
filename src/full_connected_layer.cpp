@@ -49,8 +49,8 @@ void FullConnectedLayer::Initialize(size_t input_node_size,
     //生成随机数 来初始化 权重数组 
     //比如第一层8个节点 第二层10个 权重就是10行8列
     Random::Uniform(-0.1, 0.1, output_node_size, input_node_size, weights_array_);
-    Matrix::CreateZerosMatrix(output_node_size, 1, biases_array_);
-    Matrix::CreateZerosMatrix(output_node_size, 1, output_array_);
+    Matrix::CreateZeros(output_node_size, 1, biases_array_);
+    Matrix::CreateZeros(output_node_size, 1, output_array_);
 }
 
 /*
@@ -62,11 +62,11 @@ int FullConnectedLayer::Forward(const Matrix2d& input_array) {
     hidden_input_array_ = input_array;
 
     //矩阵相乘  w .* x 得到输出数组
-    if (-1 == Matrix::MatrixDotProduct(weights_array_, input_array, output_array_)) {
+    if (-1 == Matrix::DotProduct(weights_array_, input_array, output_array_)) {
         return -1;
     }
     //矩阵相加 w .* x + b
-    if (-1 == Matrix::MatrixAdd(output_array_, biases_array_, output_array_)) {
+    if (-1 == Matrix::Add(output_array_, biases_array_, output_array_)) {
         return -1;
     }
     
@@ -90,11 +90,11 @@ int FullConnectedLayer::Forward(const ImageMatrix2d& input_array) {
     input_array_ = input_array;
     
     //矩阵相乘  w .* x 得到输出数组
-    if (-1 == Matrix::MatrixDotProduct(weights_array_, input_array, output_array_)) {
+    if (-1 == Matrix::DotProduct(weights_array_, input_array, output_array_)) {
         return -1;
     }
     //矩阵相加 w .* x + b
-    if (-1 == Matrix::MatrixAdd(output_array_, biases_array_, output_array_)) {
+    if (-1 == Matrix::Add(output_array_, biases_array_, output_array_)) {
         return -1;
     }
     
@@ -132,18 +132,18 @@ int FullConnectedLayer::Backward(const Matrix2d& output_delta_array) {
 
     //计算w的转置矩阵 WT 
     Matrix2d weights_transpose_array;
-    if (-1 == Matrix::TransposeMatrix(weights_array_, weights_transpose_array)) {
+    if (-1 == Matrix::Transpose(weights_array_, weights_transpose_array)) {
         return -1;
     }
     
     Matrix2d temp_array2;
     //计算WT .* delta_array
-    if (-1 == Matrix::MatrixDotProduct(weights_transpose_array, output_delta_array, temp_array2)) {
+    if (-1 == Matrix::DotProduct(weights_transpose_array, output_delta_array, temp_array2)) {
         return -1;
     }
 
     //计算x * (1 - x) * WT .* delta_array 得到本层的delta_array
-    if (-1 == Matrix::MatrixHadamarkProduct(temp_array1, temp_array2, delta_array_)) {
+    if (-1 == Matrix::HadamarkProduct(temp_array1, temp_array2, delta_array_)) {
         return -1;
     }
     
@@ -152,19 +152,19 @@ int FullConnectedLayer::Backward(const Matrix2d& output_delta_array) {
     if (is_input_layer_) {
         ImageMatrix2d input_transpose_array;
 
-        if (-1 == ImageMatrix::TransposeMatrix(input_array_, input_transpose_array)) {
+        if (-1 == ImageMatrix::Transpose(input_array_, input_transpose_array)) {
             return -1;
         }
-        if (-1 == Matrix::MatrixDotProduct(output_delta_array, input_transpose_array, weights_gradient_array_)) {
+        if (-1 == Matrix::DotProduct(output_delta_array, input_transpose_array, weights_gradient_array_)) {
             return -1;
         }
     } else {
         Matrix2d _input_transpose_array;
         
-        if (-1 == Matrix::TransposeMatrix(hidden_input_array_, _input_transpose_array)) {
+        if (-1 == Matrix::Transpose(hidden_input_array_, _input_transpose_array)) {
             return -1;
         }
-        if (-1 == Matrix::MatrixDotProduct(output_delta_array, _input_transpose_array, weights_gradient_array_)) {
+        if (-1 == Matrix::DotProduct(output_delta_array, _input_transpose_array, weights_gradient_array_)) {
             return -1;
         }
     }
@@ -185,12 +185,12 @@ void FullConnectedLayer::UpdateWeights(double learning_rate) {
     //权重的变化数组 
     Matrix2d weights_delta_array;
     Matrix::ValueMulMatrix(learning_rate, weights_gradient_array_, weights_delta_array);
-    Matrix::MatrixAdd(weights_array_, weights_delta_array, weights_array_);
+    Matrix::Add(weights_array_, weights_delta_array, weights_array_);
 
     //偏置的变化数组
     Matrix2d biases_delta_array;
     Matrix::ValueMulMatrix(learning_rate, biases_gradient_array_, biases_delta_array);
-    Matrix::MatrixAdd(biases_array_, biases_delta_array, biases_array_);
+    Matrix::Add(biases_array_, biases_delta_array, biases_array_);
 }
 
 void FullConnectedLayer::Dump() const noexcept {
