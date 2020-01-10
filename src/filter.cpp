@@ -38,11 +38,11 @@ Filter::~Filter() {
 void Filter::Initialize(size_t height, size_t width, size_t depth) {
     //生成随机数 来初始化 权重数组 
     Random::Uniform(-0.0001, 0.0001, depth, height, width, weights_array_);
-    bias_ = 0;
+    bias_ = 0.0;
     
     //初始化梯度
     Matrix::CreateZeros(Matrix::GetShape(weights_array_), weights_gradient_array_);
-    bias_gradient_ = 0;
+    bias_gradient_ = 0.0;
 }
 
 /*
@@ -52,11 +52,11 @@ void Filter::Initialize(size_t height, size_t width, size_t depth) {
  */
 void Filter::UpdateWeights(double learning_rate) {
     //权重的变化数组 
-    Matrix2d weights_delta_array;
+    Matrix3d weights_delta_array;
     Matrix::ValueMulMatrix(learning_rate, weights_gradient_array_, weights_delta_array);
     Matrix::Subtract(weights_array_, weights_delta_array, weights_array_);
 
-    bias -= learning_rate * bias_gradient_;
+    bias_ -= learning_rate * bias_gradient_;
 }
 
 void Filter::Dump() const noexcept {
