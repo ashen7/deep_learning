@@ -1440,15 +1440,22 @@ int8_t Matrix<DataType>::ZeroPadding(const Matrix3d& source_matrix,
     }
 
     //check一下结果矩阵 深度应该不变 行 列 应该加上zero_padding
-    if (!MatrixCheck(result_matrix, depth, height + 2 * zero_padding, width + 2 * zero_padding)) {
+    if (!MatrixCheck(result_matrix, depth, height + 2 * zero_padding, width + 2 * zero_padding, false)) {
         result_matrix.clear();
         result_matrix = Matrix3d(depth, Matrix2d(height + 2 * zero_padding, Matrix1d(width + 2 * zero_padding, 0)));
     }
 
+    //直接调用getroi 来把中间那部分矩阵赋值了
+    if (-1 == GetROI(source_matrix, zero_padding, zero_padding, height, width, result_matrix)) {
+        LOG(ERROR) << "matrix zero padding failed";
+        return -1;
+    }
      
+    return 0;
 }
 
 //得到矩阵中感兴趣的区域 (x, y)起始行列 x+height y+width是结尾行列
+//源矩阵是roi 赋值到大矩阵result_matrix中
 template <typename DataType>
 int8_t Matrix<DataType>::GetROI(const Matrix3d& source_matrix, 
                                 int32_t x, int32_t y, 
@@ -1478,34 +1485,42 @@ int8_t Matrix<DataType>::GetROI(const Matrix3d& source_matrix,
     int source_matrix_width;
     std::tie(source_matrix_depth, source_matrix_height, source_matrix_width) = shape;
     if (source_matrix_depth <= 0) {
-        LOG(ERROR) << "get matrix roi failed, input matrix depth is empty";
+        LOG(ERROR) << "get matrix roi failed, input matrix depth is wrong";
         return -1;
     }
-    if (source_matrix_height <= 0) {
-        LOG(ERROR) << "get matrix roi failed, input matrix height is empty";
+    if (source_matrix_height <= 0
+            || source_matrix_height < height) {
+        LOG(ERROR) << "get matrix roi failed, input matrix height is wrong";
         return -1;
     }
-    if (source_matrix_width <= 0) {
-        LOG(ERROR) << "get matrix roi failed, input matrix width is empty";
+    if (source_matrix_width <= 0
+            || source_matrix_width < width) {
+        LOG(ERROR) << "get matrix roi failed, input matrix width is wrong";
         return -1;
     }
 
-    //这里要多判断一个 x + height 不能超过了矩阵的行 y + width 不能超过了矩阵的列
-    if (x + height > source_matrix_height) {
-        LOG(ERROR) << "get matrix roi failed, input matrix x + height > source matrix height";
+    //getshape 会check结果矩阵
+    auto result_shape = GetShape(result_matrix);
+    int result_matrix_depth;
+    int result_matrix_height;
+    int result_matrix_width;
+    std::tie(result_matrix_depth, result_matrix_height, result_matrix_width) = result_shape;
+    if (result_matrix_depth <= 0
+            || result_matrix_depth != source_matrix_depth) {
+        LOG(ERROR) << "get matrix roi failed, result matrix depth is wrong";
         return -1;
     }
-    if (y + width > source_matrix_width) {
-        LOG(ERROR) << "get matrix roi failed, input matrix y + width > source matrix width";
+    if (result_matrix_height <= 0
+            || x + height > result_matrix_height) {
+        LOG(ERROR) << "get matrix roi failed, result matrix height is wrong";
         return -1;
     }
-    
-    //check一下结果矩阵
-    if (!MatrixCheck(result_matrix, source_matrix_depth, height, width, false)) {
-        result_matrix.clear();
-        result_matrix = Matrix3d(source_matrix_depth, Matrix2d(height, Matrix1d(width)));
+    if (result_matrix_width <= 0
+            || y + width > result_matrix_width) {
+        LOG(ERROR) << "get matrix roi failed, result matrix width is wrong";
+        return -1;
     }
- 
+
 #pragma omp parallel num_threads(OPENMP_THREADS_NUMBER)
     {
         #pragma omp for schedule(static) 
@@ -1513,7 +1528,7 @@ int8_t Matrix<DataType>::GetROI(const Matrix3d& source_matrix,
         for (int i = 0; i < source_matrix_depth; i++) {
             for (int j = x, q = 0; j < x + height; j++, q++) {
                 for (int k = y, w = 0; k < y + width; k++, w++) {
-                    result_matrix[i][q][w] = source_matrix[i][j][k];
+                    result_matrix[i][j][k] = source_matrix[i][q][w];
                 }
             }
         }
