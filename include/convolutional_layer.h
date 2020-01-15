@@ -34,6 +34,7 @@ class Filter;
 //全连接层实现类
 class ConvolutionalLayer {
 public:
+    typedef std::vector<double> Matrix1d;
     typedef std::vector<std::vector<double>> Matrix2d;
     typedef std::vector<std::vector<std::vector<double>>> Matrix3d;
     typedef std::vector<std::vector<uint8_t>> ImageMatrix2d;
@@ -49,14 +50,14 @@ public:
     
     //计算输出特征图的宽高
     //特征图大小 = (输入大小 - 卷积核大小 + 2*补0填充) / 步长 + 1
-    static size_t CalculateOutputHeight(size_t input_height, size_t filter_height,
-                                        size_t zero_padding, size_t stride) {
-        return static_cast<size_t>((input_height - filter_height + 2 * zero_padding) / stride + 1);
+    static int CalculateOutputHeight(int input_height, int filter_height,
+                                     int zero_padding, int stride) {
+        return static_cast<int>((input_height - filter_height + 2 * zero_padding) / stride + 1);
     }
 
-    static size_t CalculateOutputWidth(size_t input_width, size_t filter_width,
-                                       size_t zero_padding, size_t stride) {
-        return static_cast<size_t>((input_width - filter_width + 2 * zero_padding) / stride + 1);
+    static int CalculateOutputWidth(int input_width, int filter_width,
+                                    int zero_padding, int stride) {
+        return static_cast<int>((input_width - filter_width + 2 * zero_padding) / stride + 1);
     }
 
     static void set_relu_forward_callback(ReLuActivatorCallback forward_callback) {
@@ -78,33 +79,51 @@ public:
     void set_filters(const std::vector<Matrix3d>& filters_weights, 
                      const std::vector<double> filters_biases) noexcept;
 
+    const Matrix3d& get_output_array() const noexcept {
+        return output_array_;
+    }
+
+    const Matrix3d& get_delta_array() const noexcept {
+        return delta_array_;
+    }
+
 public:
-    void Initialize(size_t input_height, size_t input_width, size_t channel_number, 
-                    size_t filter_height, size_t filter_width, size_t filter_number, 
-                    size_t zero_padding, size_t stride, size_t learning_rate); 
-    int Forward(const Matrix2d& input_array);
-    int Forward(const ImageMatrix2d& input_array);
-    int Backward(const Matrix2d& output_delta_array);
-    void UpdateWeights(double learning_rate);
+    void Initialize(int input_height, int input_width, int channel_number, 
+                    int filter_height, int filter_width, int filter_number, 
+                    int zero_padding, int stride, double learning_rate); 
+    int Forward(const Matrix3d& input_array);
+    int Backward(const Matrix3d& input_array, 
+                 const Matrix3d& sensitivity_array);
+    void UpdateWeights();
+    
+    int CalcBpGradient(const Matrix3d& sensitivity_array);
+    int CalcBpSensitivityMap(const Matrix3d& sensitivity_array);
+    int ExpandSensitivityMap(const Matrix3d& input_sensitivity_array, 
+                             Matrix3d& output_sensitivity_array);
     void Dump() const noexcept;
+
+    int GradientCheck(const Matrix3d& input_array);
 
 protected:
     static ReLuActivatorCallback relu_forward_callback_;  //激活函数的前向计算
     static ReLuActivatorCallback relu_backward_callback_; //激活函数的反向计算 
 
 private:
-    size_t input_height_;   //输入图像高
-    size_t input_width_;    //输入图像宽
-    size_t channel_number_; //输入图像深度
-    size_t filter_height_;  //卷积核高
-    size_t filter_width_;   //卷积核宽
-    size_t filter_number_;  //卷积核个数
-    size_t zero_padding_;   //补0填充
-    size_t stride_;         //卷积时移动的步长
+    int input_height_;      //输入图像高
+    int input_width_;       //输入图像宽
+    int channel_number_;    //输入图像深度
+    int filter_height_;     //卷积核高
+    int filter_width_;      //卷积核宽
+    int filter_number_;     //卷积核个数
+    int zero_padding_;      //补0填充
+    int stride_;            //卷积时移动的步长
     double learning_rate_;  //学习速率
-    size_t output_height_;  //输出特征图高
-    size_t output_width_;   //输出特征图宽
-    Matrix3d output_array_; //输出特征图数组
+    int output_height_;     //输出特征图高
+    int output_width_;      //输出特征图宽
+    Matrix3d input_array_;         //输入数组
+    Matrix3d padded_input_array_;  //补0填充后的输入数组
+    Matrix3d output_array_;        //输出特征图数组
+    Matrix3d delta_array_;         //通过本层敏感图计算得到 上一层的敏感图(误差项) 这是保存上一层的误差项 
     std::vector<std::shared_ptr<Filter>> filters_;  //filter对象数组
 };
 
