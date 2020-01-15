@@ -45,7 +45,7 @@ public:
     }
 
     //梯度检查时 要小小的改变一下权重 来查看梯度的浮动变化
-    const Matrix3d& get_weights_array() const noexcept {
+    Matrix3d& get_weights_array() noexcept {
         return weights_array_;
     }
 
@@ -57,8 +57,20 @@ public:
         return bias_;
     }
 
+    void set_weights_gradient_array(const Matrix3d& weights_gradient_array) noexcept {
+        weights_gradient_array_ = weights_gradient_array;
+    }
+
     const Matrix3d& get_weights_gradient_array() const noexcept {
         return weights_gradient_array_;
+    }
+
+    void set_bias_gradient(double bias_gradient) noexcept {
+        bias_gradient_ = bias_gradient;
+    }
+
+    double get_bias_gradient() const noexcept {
+        return bias_gradient_;
     }
 
 public:
